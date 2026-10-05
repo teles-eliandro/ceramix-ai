@@ -75,16 +75,78 @@ def _ensure_loaded():
 
 @app.on_event("startup")
 def _startup():
+    """Load the pre-baked deploy bundle when available, else train from source.
+
+    The bundle (models/deploy_bundle.pkl) is produced by
+    scripts/export_deploy_bundle.py and contains the fitted pipelines plus the
+    candidate pool, so a web dyno does not need the 48 MB dataset nor a
+    multi-minute training run at boot.
+    """
     try:
-        from ranker import RecipeRanker, rgb_to_lab
+        bundle_path = MODELS / "deploy_bundle.pkl"
+        if bundle_path.exists():
+            r = _load_bundle(bundle_path)
+            STATE["candidates"] = r.candidates
+            STATE["ranker"] = r.ranker
+            STATE["meta"] = _load_meta()
+            STATE["ready"] = True
+            print(f"[ceramix] loaded deploy bundle ({len(r.candidates)} candidates)")
+            return
+
+        from ranker import RecipeRanker
         STATE["ranker"] = RecipeRanker().train()
+        STATE["candidates"] = None
         STATE["meta"] = _load_meta()
         STATE["ready"] = True
-        print("[ceramix] models loaded")
+        print("[ceramix] models loaded (trained from source)")
     except Exception as e:  # pragma: no cover
         STATE["ready"] = False
         STATE["error"] = f"{type(e).__name__}: {e}"
         print(f"[ceramix] model load failed: {e}")
+
+
+class _Bundle:
+    """Container for a loaded deploy bundle."""
+
+    def __init__(self, ranker, candidates):
+        self.ranker = ranker
+        self.candidates = candidates
+
+
+def _load_bundle(path: Path) -> _Bundle:
+    """Rehydrate a RecipeRanker-like object from the pickled bundle.
+
+    Bundle layout (see scripts/export_deploy_bundle.py):
+      cols, widths, model, le_surface, le_transp, candidate_X, candidate_display
+    """
+    import pickle
+
+    import pandas as pd
+
+    from ranker import RecipeRanker
+
+    with path.open("rb") as fh:
+        b = pickle.load(fh)
+
+    r = RecipeRanker()
+    r.cols = b["cols"]
+    r.widths = b["widths"]
+    r.model = b["model"]
+    r.le_surface = b.get("le_surface")
+    r.le_transp = b.get("le_transp")
+    r.vocab = None  # not needed for inference
+
+    cand = b["candidate_X"]
+    disp = b.get("candidate_display") or {}
+    for col, series in disp.items():
+        if col not in cand.columns:
+            try:
+                cand[col] = series.values
+            except Exception:
+                pass
+    if not isinstance(cand, pd.DataFrame):  # defensive
+        cand = pd.DataFrame(cand)
+    return _Bundle(r, cand)
 
 
 def _load_meta() -> dict:
@@ -188,20 +250,19 @@ def suggest(body: SuggestIn):
     """Rank real recipes against a target colour + finish."""
     _ensure_loaded()
     import pandas as pd
+    from ranker import rgb_to_hex, rgb_to_lab
     ranker = STATE["ranker"]
     tgt = _parse_colour(body.colour)
 
-    from features import build_split
-    cand_path = MODELS / "candidate_cache.parquet"
-    if cand_path.exists():
-        cand = pd.read_parquet(cand_path)
-    else:
-        Xte, _ = build_split("test", ing_vocab=ranker.vocab)
-        cand = Xte.reindex(columns=ranker.cols, fill_value=0.0).fillna(0)
-        try:
-            cand.to_parquet(cand_path)
-        except Exception:
-            pass
+    cand = STATE.get("candidates")
+    if cand is None:
+        cand_path = MODELS / "candidate_cache.parquet"
+        if cand_path.exists():
+            cand = pd.read_parquet(cand_path)
+        else:
+            from features import build_split
+            Xte, _ = build_split("test", ing_vocab=ranker.vocab)
+            cand = Xte.reindex(columns=ranker.cols, fill_value=0.0).fillna(0)
 
     res = ranker.rank(tgt, target_surface=body.surface,
                       target_transparency=body.transparency,
