@@ -1,0 +1,295 @@
+{
+  "target_hex": "#B8860B",
+  "candidates": [
+    {
+      "index": 102,
+      "delta_e": 36.02,
+      "rgb": [
+        150,
+        108,
+        69
+      ],
+      "hex": "#966C45",
+      "interval": [
+        [
+          77,
+          37,
+          -3
+        ],
+        [
+          222,
+          180,
+          141
+        ]
+      ],
+      "interval_contains_target": true,
+      "interval_gap": 0.0,
+      "surface": "Glossy",
+      "surface_match": false,
+      "transparency": "Opaque",
+      "transparency_match": null,
+      "score": 30.02
+    },
+    {
+      "index": 2979,
+      "delta_e": 41.03,
+      "rgb": [
+        129,
+        99,
+        64
+      ],
+      "hex": "#816340",
+      "interval": [
+        [
+          57,
+          28,
+          -8
+        ],
+        [
+          202,
+          171,
+          136
+        ]
+      ],
+      "interval_contains_target": true,
+      "interval_gap": 0.0,
+      "surface": "Matte",
+      "surface_match": true,
+      "transparency": "Opaque",
+      "transparency_match": null,
+      "score": 30.033
+    },
+    {
+      "index": 4756,
+      "delta_e": 41.24,
+      "rgb": [
+        140,
+        113,
+        79
+      ],
+      "hex": "#8C714F",
+      "interval": [
+        [
+          67,
+          42,
+          7
+        ],
+        [
+          213,
+          185,
+          151
+        ]
+      ],
+      "interval_contains_target": true,
+      "interval_gap": 0.0,
+      "surface": "Matte",
+      "surface_match": true,
+      "transparency": "Opaque",
+      "transparency_match": null,
+      "score": 30.243
+    },
+    {
+      "index": 3832,
+      "delta_e": 41.85,
+      "rgb": [
+        131,
+        99,
+        66
+      ],
+      "hex": "#836342",
+      "interval": [
+        [
+          59,
+          28,
+          -6
+        ],
+        [
+          204,
+          171,
+          139
+        ]
+      ],
+      "interval_contains_target": true,
+      "interval_gap": 0.0,
+      "surface": "Matte",
+      "surface_match": true,
+      "transparency": "Opaque",
+      "transparency_match": null,
+      "score": 30.846
+    },
+    {
+      "index": 1128,
+      "delta_e": 43.4,
+      "rgb": [
+        130,
+        104,
+        72
+      ],
+      "hex": "#826848",
+      "interval": [
+        [
+          57,
+          33,
+          0
+        ],
+        [
+          203,
+          175,
+          145
+        ]
+      ],
+      "interval_contains_target": true,
+      "interval_gap": 0.0,
+      "surface": "Matte",
+      "surface_match": true,
+      "transparency": "Opaque",
+      "transparency_match": null,
+      "score": 32.396
+    },
+    {
+      "index": 4312,
+      "delta_e": 43.81,
+      "rgb": [
+        138,
+        101,
+        74
+      ],
+      "hex": "#8A654A",
+      "interval": [
+        [
+          65,
+          29,
+          2
+        ],
+        [
+          210,
+          172,
+          146
+        ]
+      ],
+      "interval_contains_target": true,
+      "interval_gap": 0.0,
+      "surface": "Matte",
+      "surface_match": true,
+      "transparency": "Opaque",
+      "transparency_match": null,
+      "score": 32.81
+    },
+    {
+      "index": 3284,
+      "delta_e": 43.96,
+      "rgb": [
+        136,
+        111,
+        82
+      ],
+      "hex": "#886F52",
+      "interval": [
+        [
+          64,
+          40,
+          9
+        ],
+        [
+          209,
+          183,
+          154
+        ]
+      ],
+      "interval_contains_target": true,
+      "interval_gap": 0.0,
+      "surface": "Matte",
+      "surface_match": true,
+      "transparency": "Opaque",
+      "transparency_match": null,
+      "score": 32.961
+    },
+    {
+      "index": 4307,
+      "delta_e": 44.34,
+      "rgb": [
+        134,
+        111,
+        81
+      ],
+      "hex": "#866F51",
+      "interval": [
+        [
+          61,
+          40,
+          9
+        ],
+        [
+          207,
+          183,
+          153
+        ]
+      ],
+      "interval_contains_target": true,
+      "interval_gap": 0.0,
+      "surface": "Matte",
+      "surface_match": true,
+      "transparency": "Opaque",
+      "transparency_match": null,
+      "score": 33.342
+    },
+    {
+      "index": 3686,
+      "delta_e": 44.97,
+      "rgb": [
+        124,
+        100,
+        69
+      ],
+      "hex": "#7C6445",
+      "interval": [
+        [
+          51,
+          28,
+          -3
+        ],
+        [
+          196,
+          171,
+          142
+        ]
+      ],
+      "interval_contains_target": true,
+      "interval_gap": 0.0,
+      "surface": "Matte",
+      "surface_match": true,
+      "transparency": "Opaque",
+      "transparency_match": null,
+      "score": 33.968
+    },
+    {
+      "index": 2993,
+      "delta_e": 45.05,
+      "rgb": [
+        132,
+        96,
+        70
+      ],
+      "hex": "#846046",
+      "interval": [
+        [
+          59,
+          25,
+          -2
+        ],
+        [
+          205,
+          168,
+          143
+        ]
+      ],
+      "interval_contains_target": true,
+      "interval_gap": 0.0,
+      "surface": "Matte",
+      "surface_match": true,
+      "transparency": "Opaque",
+      "transparency_match": null,
+      "score": 34.054
+    }
+  ]
+}

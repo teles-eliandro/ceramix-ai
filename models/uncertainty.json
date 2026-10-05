@@ -1,0 +1,26 @@
+{
+  "method": "gradient-boosted quantile regression + split conformal",
+  "nominal_coverage": 0.9,
+  "channels": {
+    "R": {
+      "conformal_width": 72.67867258245172,
+      "coverage_conformal": 0.9110748521313482,
+      "coverage_model_interval": 0.8354068937385274,
+      "median_mae": 35.04174904718177
+    },
+    "G": {
+      "conformal_width": 71.47477035802429,
+      "coverage_conformal": 0.9025086681623495,
+      "coverage_model_interval": 0.8129716500101979,
+      "median_mae": 35.69265171998647
+    },
+    "B": {
+      "conformal_width": 72.11893529865756,
+      "coverage_conformal": 0.8733428513155211,
+      "coverage_model_interval": 0.8188863960840301,
+      "median_mae": 38.58332756626056
+    }
+  },
+  "joint_coverage": 0.8082806445033653,
+  "total_secs": 213.1
+}

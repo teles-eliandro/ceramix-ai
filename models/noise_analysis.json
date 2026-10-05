@@ -1,0 +1,12 @@
+{
+  "intra_photo_noise_mean": 84.60434430000778,
+  "intra_photo_noise_median": 83.82422084338154,
+  "inter_sample_signal_mean": 80.93693088097984,
+  "noise_signal_ratio": 1.0453119902016172,
+  "var_observed": 2801.9117743193856,
+  "var_noise": 3578.9475372171296,
+  "r2_ceiling_estimate": 0.0,
+  "identical_chem_groups": 661,
+  "identical_chem_dispersion": 41.70280307995396,
+  "n_samples": 16781
+}

@@ -1,0 +1,167 @@
+{
+  "dataset": {
+    "name": "GlazyBench",
+    "source": "AlpachinoNLP/GlazyBench (HuggingFace)",
+    "arxiv": "arXiv:2605.06641",
+    "licence": "MIT",
+    "train_n": 16781,
+    "test_n": 4903,
+    "n_features": 155
+  },
+  "tasks": {
+    "rgb": {
+      "catboost": {
+        "r2": 0.355078582650276,
+        "mae": 37.87085451639181,
+        "rmse": 46.10342519180958,
+        "secs": 131.6
+      },
+      "xgboost": {
+        "r2": 0.32652489498505183,
+        "mae": 38.41093552082592,
+        "rmse": 47.112364487812094,
+        "secs": 51.9
+      },
+      "rf": {
+        "r2": 0.3371139600917277,
+        "mae": 38.47551966833286,
+        "rmse": 46.743320550228106,
+        "secs": 69.9
+      },
+      "mlp": {
+        "r2": 0.23221509294420772,
+        "mae": 40.16648581157538,
+        "rmse": 50.301261517506454,
+        "secs": 28.9
+      },
+      "ensemble": {
+        "r2": 0.34748033198157785,
+        "mae": 38.011364544593455,
+        "rmse": 46.37328056977387,
+        "weights": {
+          "catboost": 0.4,
+          "xgboost": 0.3,
+          "mlp": 0.3
+        }
+      },
+      "per_channel_r2": {
+        "R": 0.3782263530896576,
+        "G": 0.34883020758025995,
+        "B": 0.3153844352748145
+      },
+      "rgb_dist_mean": 69.59813919802157,
+      "rgb_dist_p50": 64.38205727889157,
+      "rgb_dist_p90": 124.31378508462538
+    },
+    "color_family": {
+      "catboost": {
+        "accuracy": 0.4423822149704263,
+        "f1_macro": 0.3000925457489383,
+        "secs": 297.6
+      },
+      "xgboost": {
+        "accuracy": 0.4299408525392617,
+        "f1_macro": 0.29787027908115626,
+        "secs": 83.0
+      },
+      "mlp": {
+        "accuracy": 0.42932898225576177,
+        "f1_macro": 0.27641460311401017,
+        "secs": 15.1
+      },
+      "ensemble": {
+        "accuracy": 0.4444217825820926,
+        "f1_macro": 0.3011209860522135,
+        "weights": {
+          "catboost": 0.4,
+          "xgboost": 0.3,
+          "mlp": 0.3
+        }
+      },
+      "majority_baseline_acc": 0.27065062206812157,
+      "classes": [
+        "Black",
+        "Blue",
+        "Gray",
+        "Green",
+        "Orange",
+        "Purple",
+        "Red",
+        "White",
+        "Yellow"
+      ]
+    },
+    "surface": {
+      "catboost": {
+        "accuracy": 0.542627345844504,
+        "f1_macro": 0.2492561519290476,
+        "secs": 253.8
+      },
+      "xgboost": {
+        "accuracy": 0.5557640750670241,
+        "f1_macro": 0.2916060856997771,
+        "secs": 69.6
+      },
+      "mlp": {
+        "accuracy": 0.4954423592493298,
+        "f1_macro": 0.2207172114006266,
+        "secs": 13.7
+      },
+      "ensemble": {
+        "accuracy": 0.5463806970509384,
+        "f1_macro": 0.2674491383923026,
+        "weights": {
+          "catboost": 0.4,
+          "xgboost": 0.3,
+          "mlp": 0.3
+        }
+      },
+      "majority_baseline_acc": 0.45361930294906166,
+      "classes": [
+        "Dry Matte",
+        "Glossy",
+        "Matte",
+        "Satin",
+        "Satin-matte",
+        "Semi-glossy",
+        "Semi-matte",
+        "Smooth Matte",
+        "Stony Matte"
+      ]
+    },
+    "transparency": {
+      "catboost": {
+        "accuracy": 0.5815773630343167,
+        "f1_macro": 0.49543397929628663,
+        "secs": 110.9
+      },
+      "xgboost": {
+        "accuracy": 0.5993377483443708,
+        "f1_macro": 0.5346403008921831,
+        "secs": 34.6
+      },
+      "mlp": {
+        "accuracy": 0.5517760385310054,
+        "f1_macro": 0.4867717786975121,
+        "secs": 21.4
+      },
+      "ensemble": {
+        "accuracy": 0.5863937387116195,
+        "f1_macro": 0.5104252085615564,
+        "weights": {
+          "catboost": 0.4,
+          "xgboost": 0.3,
+          "mlp": 0.3
+        }
+      },
+      "majority_baseline_acc": 0.4334738109572547,
+      "classes": [
+        "Opaque",
+        "Semi-opaque",
+        "Translucent",
+        "Transparent"
+      ]
+    }
+  },
+  "total_secs": 1192.3
+}
