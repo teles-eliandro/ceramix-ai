@@ -143,8 +143,10 @@
 </div>
 
 <script>
-const API = (location.port === '8099' || location.protocol.startsWith('http'))
-  ? `${location.protocol}//${location.hostname}:8099` : 'http://127.0.0.1:8099';
+// The UI is served by the same FastAPI app as the API, so same-origin always
+// works — in production and locally. Only fall back to the dev port when the
+// page was opened from a file:// URL.
+const API = location.protocol.startsWith('http') ? '' : 'http://127.0.0.1:8099';
 
 const $ = s => document.querySelector(s);
 
