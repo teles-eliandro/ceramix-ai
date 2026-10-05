@@ -61,6 +61,49 @@
   footer{color:var(--dim);font-size:12.5px;text-align:center;padding:26px 20px;
          border-top:1px solid var(--line);margin-top:34px}
   code{background:var(--panel2);padding:1px 6px;border-radius:5px;font-size:12.5px}
+
+  /* ---- legend ---- */
+  .resbar{margin:10px 0 4px}
+  details.legend{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--accent2);
+                 border-radius:10px;padding:12px 14px;margin:12px 0 16px}
+  details.legend>summary{cursor:pointer;font-size:13.5px;color:var(--txt)}
+  details.legend>summary:hover{color:var(--accent2)}
+  .lgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+         gap:14px;margin-top:14px}
+  .lgrid h4{margin:0 0 6px;font-size:13px;color:var(--accent2);font-weight:600}
+  .lgrid p{margin:0 0 8px;font-size:12.5px;line-height:1.55;color:#c9ced9}
+  .lgrid p.warn{color:#e8dfb8}
+  table.ltab{width:100%;font-size:12px;margin:0 0 8px}
+  table.ltab td{padding:2px 0;border:0;color:#b8bfcc}
+  table.ltab td:first-child{font-family:ui-monospace,monospace;width:60px;color:var(--accent2)}
+
+  /* ---- candidate cards ---- */
+  .cands{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  details.cand{background:var(--panel2);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  details.cand[open]{border-color:#33405c}
+  details.cand>summary{cursor:pointer;padding:11px 13px;display:flex;align-items:center;
+                       gap:10px;flex-wrap:wrap;font-size:13.5px;list-style:none}
+  details.cand>summary::-webkit-details-marker{display:none}
+  details.cand>summary:hover{background:#222834}
+  details.cand>summary .rank{background:var(--panel);border:1px solid var(--line);
+      border-radius:6px;min-width:26px;text-align:center;font-size:12px;padding:2px 6px;color:var(--dim)}
+  details.cand>summary .grow{flex:1 1 auto}
+  .cbody{padding:2px 13px 13px;border-top:1px solid var(--line)}
+  .cgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:12px}
+  .cbox{min-width:0}
+  .cbox h5{margin:0 0 7px;font-size:12.5px;color:var(--accent2);font-weight:600;
+           text-transform:uppercase;letter-spacing:.03em}
+  table.sub{width:100%;font-size:12.5px;border-collapse:collapse}
+  table.sub th{text-align:left;color:var(--dim);font-weight:500;font-size:11.5px;
+               padding:3px 0;border-bottom:1px solid var(--line)}
+  table.sub td{padding:3px 0;border-bottom:1px solid #23283340}
+  table.sub td.num{text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  table.sub tr.tot td{border-top:1px solid var(--line);border-bottom:0;
+                      font-weight:600;color:var(--txt);padding-top:5px}
+  .cbox a{color:var(--accent2);text-decoration:none}
+  .cbox a:hover{text-decoration:underline}
+  .cbox table.sub{max-height:none}
+
   /* phone refinements */
   @media(max-width:600px){
     header{padding:16px 16px}
@@ -71,6 +114,10 @@
     .kpi div{min-width:0;flex:1 1 calc(50% - 10px);padding:9px 11px}
     .kpi b{font-size:17px}
     .tag{font-size:11px}
+    .cgrid{grid-template-columns:1fr}
+    .lgrid{grid-template-columns:1fr}
+    details.cand>summary{font-size:12.5px;padding:10px}
+    .cbody{padding:2px 10px 11px}
   }
 </style>
 </head>
@@ -264,33 +311,244 @@ function renderTarget(d){
        transparency = <b>${d.requested.transparency || 'any'}</b></div>`;
 }
 
+// ---- inline legend, shown above every result set ------------------------
+const LEGEND = `
+<details class="legend">
+  <summary><b>What do these indicators mean?</b> — tap to open the legend</summary>
+
+  <div class="lgrid">
+    <div>
+      <h4>ΔE — perceived colour difference</h4>
+      <p>Distance between two colours in CIELAB, 0 = identical, ~100 = black vs white.
+      <b>The smaller the better.</b></p>
+      <table class="ltab">
+        <tr><td>0–1</td><td>imperceptible</td></tr>
+        <tr><td>1–2</td><td>only a trained eye</td></tr>
+        <tr><td>2–5</td><td>visible, still "same colour"</td></tr>
+        <tr><td>5–10</td><td>clearly different</td></tr>
+        <tr><td>&gt;20</td><td>visually unrelated colours</td></tr>
+      </table>
+      <p class="warn">This model currently lands around <b>ΔE 30–45</b>: the predicted
+      colour does <b>not</b> match the requested one. That is the honest limit of the
+      data, explained below — not a display glitch.</p>
+    </div>
+
+    <div>
+      <h4>Predicted (HEX / RGB / L*a*b*)</h4>
+      <p>The colour the model expects this recipe to fire to.</p>
+      <p><b>L*</b> lightness (0 black → 100 white) · <b>a*</b> green↔red ·
+      <b>b*</b> blue↔yellow. LAB is the ceramic industry standard because equal
+      numeric steps = equal perceived steps.</p>
+    </div>
+
+    <div>
+      <h4>90% interval</h4>
+      <p>The model does not claim one exact colour — it claims a <b>range</b> where the
+      real colour should fall, with 90% confidence. Calibrated by conformal prediction
+      and verified (measured coverage 91.1% / 90.3% / 87.3% for R/G/B).</p>
+      <p class="warn">Widths are ±72.7 (R), ±71.5 (G), ±72.1 (B) on a 0–255 scale.
+      That is very wide — the numeric way of saying "not enough information".</p>
+    </div>
+
+    <div>
+      <h4>"Target in 90% interval"</h4>
+      <p><span class="pill ok">in range</span> the target sits inside the model's
+      uncertainty — compatible.</p>
+      <p><span class="pill no">outside</span> the model declares it does not hit this one.</p>
+      <p>Treat <i>in range</i> as <b>necessary, not sufficient</b>: it does not mean
+      "this recipe gives that colour", only "this recipe is not ruled out".</p>
+    </div>
+
+    <div>
+      <h4>Texture — surface finish</h4>
+      <p>From <b>Glossy</b> (mirror shine) through <b>Satin</b> to
+      <b>Stony Matte</b> (stone-like). Accuracy 54.6% vs 45.4% random, so nearly half
+      of texture predictions do not match — use as indication, not guarantee.</p>
+      <p><span class="pill ok">match</span> predicted finish equals the one you asked
+      for. <span class="pill">—</span> it does not, or you asked for none.</p>
+    </div>
+
+    <div>
+      <h4>Transparency</h4>
+      <p><b>Opaque</b> blocks light (opacifiers present) → <b>Semi-opaque</b> →
+      <b>Translucent</b> → <b>Transparent</b> (body shows through).
+      Accuracy 58.6% vs 43.4% random.</p>
+    </div>
+
+    <div>
+      <h4>Oxides (wt%)</h4>
+      <p>The recipe's chemical analysis — the universal language of technical ceramics.
+      Two recipes with different raw materials but equal oxide chemistry tend to behave
+      alike.</p>
+      <p><b>Glass formers</b> SiO₂ B₂O₃ · <b>amphoteric</b> Al₂O₃ ·
+      <b>fluxes</b> Na₂O K₂O Li₂O CaO MgO BaO SrO ZnO PbO ·
+      <b>opacifiers</b> SnO₂ ZrO₂ TiO₂ CeO₂ ·
+      <b>colorants</b> CoO CuO Cr₂O₃ Fe₂O₃ MnO NiO V₂O₅.</p>
+    </div>
+
+    <div>
+      <h4>Ingredients (g)</h4>
+      <p>The recipe as weighed at the bench. Scale by multiplying every amount by the
+      same factor. Totals exceed 100 g because colorant/opacifier additions sit on top
+      of the base.</p>
+    </div>
+
+    <div>
+      <h4>UMF — Unity Molecular Formula</h4>
+      <p>The recipe recalculated in <b>relative molecules</b>, with fluxes normalised to
+      1.0. The professional standard for comparing glazes: different recipes can share
+      nearly identical UMF and fire the same.</p>
+    </div>
+
+    <div>
+      <h4>Cone &amp; atmosphere</h4>
+      <p><b>Cone</b> = Orton firing scale (measures heat <i>work</i>, not just peak
+      temperature): 06–04 ≈ 1000–1060 °C, <b>5–6 ≈ 1180–1240 °C</b> (stoneware, most
+      common), 9–10 ≈ 1260–1300 °C (porcelain).</p>
+      <p><b>Atmosphere</b>: <b>Oxidation</b> = abundant oxygen, clean colours;
+      <b>Reduction</b> = Cu→blood red, Fe→blues and greens. The same recipe can fire to
+      <i>completely different</i> colours depending on this.</p>
+      <p class="warn">These describe the firing the original recipe was designed for —
+      the model reports them, it does not recommend a firing schedule.</p>
+    </div>
+
+    <div>
+      <h4>score</h4>
+      <p>Sorting key only — <b>lower is better</b>. Penalises colour error and distance
+      to the interval, rewards texture/transparency matches. Only meaningful
+      <i>within one list</i>; do not compare scores across searches.</p>
+    </div>
+
+    <div>
+      <h4>Why are the numbers so low?</h4>
+      <p><b>82.7%</b> of colour variance in this dataset is <i>within-chemistry</i>
+      variance: chemically identical recipes fire to colours differing by ~48 sRGB
+      units. The ceiling for any chemistry-only model is <b>≈0.17–0.28</b>, and this
+      model reaches R²=0.347 — i.e. above that ceiling.</p>
+      <p>The missing information is physical: layer thickness, kiln curve, real
+      atmosphere, supporting clay body. It cannot be recovered from chemistry. This
+      system therefore does <b>honest triage of real recipes</b>, not exact colour
+      matching.</p>
+    </div>
+  </div>
+</details>`;
+
+// ---- per-candidate report card -----------------------------------------
+function oxideTable(oxides){
+  if(!oxides || !oxides.length) return '<div class="muted">no chemical analysis available</div>';
+  const rows = oxides.map(o =>
+    `<tr><td>${o.oxide}</td><td class="num">${o.wt_pct.toFixed(2)}</td></tr>`).join('');
+  return `<table class="sub"><thead><tr><th>Oxide</th><th>wt%</th></tr></thead>
+          <tbody>${rows}</tbody></table>`;
+}
+
+function ingTable(ings){
+  if(!ings || !ings.length) return '<div class="muted">no raw-material list available</div>';
+  const rows = ings.map(i =>
+    `<tr><td>${i.material}</td><td class="num">${i.amount.toFixed(1)}</td></tr>`).join('');
+  const total = ings.reduce((a,b)=>a+b.amount,0);
+  return `<table class="sub"><thead><tr><th>Material</th><th>g</th></tr></thead>
+          <tbody>${rows}
+          <tr class="tot"><td>total</td><td class="num">${total.toFixed(1)}</td></tr>
+          </tbody></table>`;
+}
+
+function umfTable(umf){
+  if(!umf || !umf.length) return '';
+  const rows = umf.map(u =>
+    `<tr><td>${u.oxide}</td><td class="num">${u.value.toFixed(3)}</td></tr>`).join('');
+  return `<table class="sub"><thead><tr><th>UMF</th><th>mol</th></tr></thead>
+          <tbody>${rows}</tbody></table>`;
+}
+
+function firingLine(r){
+  const parts = [];
+  if(r.cone) parts.push(`<b>Cone ${r.cone}</b>`);
+  if(r.atmosphere) parts.push(`<b>${r.atmosphere}</b>`);
+  if(r.temperature_value) parts.push(`${r.temperature_value} ${r.temperature_unit||'°C'}`);
+  if(r.temperature && !r.temperature_value) parts.push(`${r.temperature}`);
+  return parts.length ? parts.join(' · ') : '<span class="muted">not recorded</span>';
+}
+
 function renderResults(d){
-  const rows = d.candidates.map((c,i) => {
-    const rgb = c.rgb, lo = c.interval[0], hi = c.interval[1];
+  const cards = d.candidates.map((c,i) => {
+    const lo = c.interval[0], hi = c.interval[1];
     const inr = c.interval_contains_target;
-    const sm  = c.surface_match, tm = c.transparency_match;
-    return `<tr>
-      <td>${i+1}</td>
-      <td><span class="sw" style="background:${c.hex}"></span>${c.hex}</td>
-      <td>${c.delta_e.toFixed(1)}</td>
-      <td>${c.surface || '—'}</td>
-      <td><span class="pill ${inr?'ok':'no'}">${inr?'in range':'outside'}</span></td>
-      <td class="ival">${lo.join(',')} → ${hi.join(',')}</td>
-      <td>${sm===true?'<span class="pill ok">match</span>':(sm===false?'<span class="pill">—</span>':'—')}
-          ${tm===true?'<span class="pill ok">opacity</span>':''}</td>
-    </tr>`;
+    const sm = c.surface_match, tm = c.transparency_match;
+    const r = c.recipe || {};
+    const measured = (r.R!=null && r.G!=null && r.B!=null)
+      ? rgbHex(r.R,r.G,r.B) : null;
+
+    return `<details class="cand" ${i<1?'open':''}>
+      <summary>
+        <span class="rank">${i+1}</span>
+        <span class="sw" style="background:${c.hex}"></span>
+        <b>${c.hex}</b>
+        <span class="muted">ΔE ${c.delta_e.toFixed(1)}</span>
+        <span class="pill ${inr?'ok':'no'}">${inr?'in range':'outside'}</span>
+        <span class="muted grow">${c.surface||'—'}</span>
+        ${sm===true?'<span class="pill ok">texture match</span>':''}
+      </summary>
+
+      <div class="cbody">
+        <div class="cgrid">
+
+          <div class="cbox">
+            <h5>Prediction vs target</h5>
+            <table class="sub">
+              <tr><td>Predicted</td><td class="num">${c.hex} · ${c.rgb.join(', ')}</td></tr>
+              <tr><td>Target</td><td class="num">${d.target.hex} · ${d.target.rgb.join(', ')}</td></tr>
+              ${measured?`<tr><td>Measured in dataset</td><td class="num">${measured}</td></tr>`:''}
+              <tr><td>ΔE (lower better)</td><td class="num"><b>${c.delta_e.toFixed(2)}</b></td></tr>
+              <tr><td>90% interval</td><td class="num">${lo.join(',')} → ${hi.join(',')}</td></tr>
+              <tr><td>Target in interval</td>
+                  <td class="num">${inr?'<span class="pill ok">yes</span>':'<span class="pill no">no</span>'}</td></tr>
+              <tr><td>Interval gap</td><td class="num">${c.interval_gap.toFixed(2)}</td></tr>
+            </table>
+          </div>
+
+          <div class="cbox">
+            <h5>Finish &amp; firing</h5>
+            <table class="sub">
+              <tr><td>Texture</td><td class="num">${c.surface||'—'}</td></tr>
+              <tr><td>Texture match</td>
+                  <td class="num">${sm===true?'<span class="pill ok">yes</span>':(sm===false?'<span class="pill no">no</span>':'—')}</td></tr>
+              <tr><td>Transparency</td><td class="num">${c.transparency||'—'}</td></tr>
+              <tr><td>Opacity match</td>
+                  <td class="num">${tm===true?'<span class="pill ok">yes</span>':(tm===false?'<span class="pill no">no</span>':'—')}</td></tr>
+              <tr><td>Firing</td><td class="num">${firingLine(r)}</td></tr>
+            </table>
+            ${r.url?`<div class="muted" style="margin-top:8px">
+              source recipe #${r.id} — <a href="${r.url}" target="_blank" rel="noopener">glazy.org/recipe/${r.id}</a></div>`:''}
+          </div>
+
+          <div class="cbox">
+            <h5>Chemical composition (oxides, wt%)</h5>
+            ${oxideTable(r.oxides)}
+          </div>
+
+          <div class="cbox">
+            <h5>Recipe as weighed (g)</h5>
+            ${ingTable(r.ingredients)}
+          </div>
+
+          ${r.umf && r.umf.length ? `<div class="cbox">
+            <h5>UMF — unity molecular formula</h5>
+            ${umfTable(r.umf)}
+          </div>`:''}
+
+        </div>
+      </div>
+    </details>`;
   }).join('');
 
   $('#results').innerHTML = `
-    <div class="tablewrap">
-      <table>
-        <thead><tr>
-          <th>#</th><th>Predicted</th><th>ΔE</th><th>Texture</th>
-          <th>Target in 90% interval</th><th>90% interval (RGB)</th><th>Match</th>
-        </tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
+    <div class="resbar">
+      <span class="muted">${d.candidates.length} candidates · sorted by score
+      (lower = better, within this list only)</span>
     </div>
+    ${LEGEND}
+    <div class="cands">${cards}</div>
     <div class="note">${d.disclaimer}</div>`;
 }
 </script>

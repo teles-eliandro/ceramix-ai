@@ -87,15 +87,18 @@ def _startup():
         if bundle_path.exists():
             r = _load_bundle(bundle_path)
             STATE["candidates"] = r.candidates
+            STATE["recipes"] = r.recipes
             STATE["ranker"] = r.ranker
             STATE["meta"] = _load_meta()
             STATE["ready"] = True
-            print(f"[ceramix] loaded deploy bundle ({len(r.candidates)} candidates)")
+            print(f"[ceramix] loaded deploy bundle ({len(r.candidates)} candidates, "
+                  f"{len(r.recipes)} full recipes)")
             return
 
         from ranker import RecipeRanker
         STATE["ranker"] = RecipeRanker().train()
         STATE["candidates"] = None
+        STATE["recipes"] = []
         STATE["meta"] = _load_meta()
         STATE["ready"] = True
         print("[ceramix] models loaded (trained from source)")
@@ -108,9 +111,10 @@ def _startup():
 class _Bundle:
     """Container for a loaded deploy bundle."""
 
-    def __init__(self, ranker, candidates):
+    def __init__(self, ranker, candidates, recipes=None):
         self.ranker = ranker
         self.candidates = candidates
+        self.recipes = recipes or []
 
 
 def _load_bundle(path: Path) -> _Bundle:
@@ -146,7 +150,16 @@ def _load_bundle(path: Path) -> _Bundle:
                 pass
     if not isinstance(cand, pd.DataFrame):  # defensive
         cand = pd.DataFrame(cand)
-    return _Bundle(r, cand)
+    return _Bundle(r, cand, b.get("candidate_recipes") or [])
+
+
+class _Bundle:
+    """Container for a loaded deploy bundle."""
+
+    def __init__(self, ranker, candidates, recipes=None):
+        self.ranker = ranker
+        self.candidates = candidates
+        self.recipes = recipes or []
 
 
 def _load_meta() -> dict:
@@ -247,7 +260,12 @@ def predict(recipes: list[RecipeIn]):
 
 @app.post("/api/suggest")
 def suggest(body: SuggestIn):
-    """Rank real recipes against a target colour + finish."""
+    """Rank real recipes against a target colour + finish.
+
+    Each candidate carries a ``recipe`` block with the full source record:
+    oxide composition (wt%), raw ingredients (g), firing (cone/atmosphere),
+    UMF, and the dataset's measured colour for comparison.
+    """
     _ensure_loaded()
     import pandas as pd
     from ranker import rgb_to_hex, rgb_to_lab
@@ -267,6 +285,24 @@ def suggest(body: SuggestIn):
     res = ranker.rank(tgt, target_surface=body.surface,
                       target_transparency=body.transparency,
                       candidates=cand, top_k=body.top_k)
+
+    # Attach the full recipe record (oxides, ingredients, firing, UMF) so the
+    # report can show what to actually weigh and fire.
+    recipes = STATE.get("recipes") or []
+    for c in res:
+        i = c.get("index")
+        if isinstance(i, int) and 0 <= i < len(recipes):
+            rec = dict(recipes[i])
+            # carry the dataset's measured colour alongside the prediction
+            for ch in ("R", "G", "B"):
+                if ch in cand.columns:
+                    try:
+                        v = cand.iloc[i][ch]
+                        rec[ch] = int(round(float(v)))
+                    except Exception:
+                        pass
+            c["recipe"] = rec
+
     from ranker import rgb_to_hex, rgb_to_lab
     return {
         "target": {"hex": rgb_to_hex(tgt), "rgb": list(tgt),
