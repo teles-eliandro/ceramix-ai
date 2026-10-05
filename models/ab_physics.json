@@ -1,0 +1,102 @@
+{
+ "n_features_base": 155,
+ "n_features_phys": 196,
+ "physics_added": 41,
+ "rgb": {
+  "base": {
+   "r2": 0.3345672052690688,
+   "mae": 38.56297043179408,
+   "per_channel_r2": {
+    "R": 0.365557742190071,
+    "G": 0.34109994227331064,
+    "B": 0.29716168306514024
+   }
+  },
+  "phys": {
+   "r2": 0.3345197600793435,
+   "mae": 38.59052949989432,
+   "per_channel_r2": {
+    "R": 0.36998935132078437,
+    "G": 0.34129314437421143,
+    "B": 0.2923777151918985
+   }
+  },
+  "delta_r2": -4.7445189725325854e-05,
+  "delta_mae": 0.027559068100245554,
+  "bootstrap": {
+   "mean_delta": 0.00010970903277416099,
+   "ci95_low": -0.004768010396178979,
+   "ci95_high": 0.005514116781758573,
+   "prob_improvement": 0.515
+  }
+ },
+ "surface": {
+  "n_train": 9378,
+  "n_test": 3730,
+  "n_classes": 9,
+  "majority_baseline_acc": 0.45361930294906166,
+  "base": {
+   "f1_macro": 0.3076692449010438,
+   "f1_weighted": 0.5023713365403468,
+   "acc": 0.5050938337801608
+  },
+  "phys": {
+   "f1_macro": 0.3107688180749466,
+   "f1_weighted": 0.5031209596881705,
+   "acc": 0.5056300268096515
+  },
+  "delta_f1": 0.003099573173902803,
+  "delta_f1_weighted": 0.0007496231478236748,
+  "delta_acc": 0.0005361930294907058
+ },
+ "transparency": {
+  "n_train": 9023,
+  "n_test": 3322,
+  "n_classes": 4,
+  "majority_baseline_acc": 0.4334738109572547,
+  "base": {
+   "f1_macro": 0.5325005436356336,
+   "f1_weighted": 0.5757219482137698,
+   "acc": 0.5863937387116195
+  },
+  "phys": {
+   "f1_macro": 0.5315723923779676,
+   "f1_weighted": 0.5730248367491418,
+   "acc": 0.5833835039133053
+  },
+  "delta_f1": -0.0009281512576659878,
+  "delta_f1_weighted": -0.0026971114646279215,
+  "delta_acc": -0.003010234798314193
+ },
+ "top_physics_importances": {
+  "chromophore_weighted_mol": 0.13029780458111279,
+  "opacifier_to_chromophore": 0.03952454785265557,
+  "opacifier_mol": 0.02073870537953578,
+  "coe_model_spread": 0.011703336391392887,
+  "coe_fit_mismatch_english_turner": 0.011459203252459523,
+  "silica_saturation": 0.011014456092620256,
+  "coe_winkelmann": 0.008543338491486478,
+  "chromophore_mol_fraction_of_solids": 0.0085106008262413,
+  "coe_english_turner_wt": 0.00800812016965222,
+  "chromophore_total_mol": 0.007784885469700945,
+  "coe_fit_mismatch_hall": 0.007509998971828636,
+  "coe_fit_mismatch_sankey": 0.00737825912719706,
+  "alumina_fraction_mol": 0.0073379188011943085,
+  "silica_fraction_mol": 0.006728287471472079,
+  "bridging_oxygen_proxy": 0.0064282905098754445
+ },
+ "physics_importance_share": 0.4140422285738183,
+ "base_features_displaced": {
+  "iron_total": 0.07348405844338185,
+  "CoO": 0.04501587055921681,
+  "CuO": 0.02137019829652757,
+  "chromophore_total": 0.018653268757325387,
+  "opacifier_total": 0.015419674178899244,
+  "umf_CuO": 0.013569958951592125,
+  "silica_alumina_ratio": 0.011831139678272429,
+  "umf_Al2O3": 0.009709682928033352,
+  "SiO2": 0.008854279250795826,
+  "R2O_wt": 0.0073461600605953074
+ },
+ "runtime_secs": 171.95958399772644
+}

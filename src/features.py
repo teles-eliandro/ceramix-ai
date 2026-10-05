@@ -159,8 +159,16 @@ def firing_features(rec: pd.DataFrame) -> pd.DataFrame:
     cones = rec["cone"].apply(parse_cone)
     f["cone_min"] = [c[0] for c in cones]
     f["cone_max"] = [c[1] for c in cones]
-    f["cone_mean"] = np.nanmean(np.vstack([f["cone_min"], f["cone_max"]]),
-                                axis=0, where=~np.isnan(np.vstack([f["cone_min"], f["cone_max"]])))
+    cone_min = np.asarray(f["cone_min"], dtype=float)
+    cone_max = np.asarray(f["cone_max"], dtype=float)
+    both = np.vstack([cone_min, cone_max])
+    # nanmean over a row where BOTH entries are NaN warns and yields NaN; guard
+    # it by masking the all-NaN rows explicitly.
+    valid = ~np.isnan(both).all(axis=0)
+    cone_mean = np.full(both.shape[1], np.nan)
+    if valid.any():
+        cone_mean[valid] = np.nanmean(both[:, valid], axis=0)
+    f["cone_mean"] = cone_mean
 
     # map mean cone to approximate peak temperature
     f["peak_temp_C"] = [_cone_to_temp(c) for c in f["cone_mean"]]
