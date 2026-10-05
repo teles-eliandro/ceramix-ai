@@ -161,23 +161,42 @@ function rgbHex(r,g,b){
   return '#'+h(r)+h(g)+h(b);
 }
 
+async function jgetRetry(p, tries=12, delay=2500){
+  // Free-tier hosting can cold-start: the first requests may fail or 503 while
+  // the instance spins up. Retry instead of dying silently.
+  let last;
+  for(let i=0;i<tries;i++){
+    try{
+      const r = await fetch(API+p);
+      if(r.ok) return await r.json();
+      last = new Error('HTTP '+r.status);
+    }catch(e){ last = e; }
+    await new Promise(res => setTimeout(res, delay));
+  }
+  throw last;
+}
+
 // ---- boot ----
 (async function(){
+  // 1. wait for the service to actually be ready
+  let h = null;
   try{
-    const h = await jget('/health');
+    $('#status').textContent = 'connecting…';
+    h = await jgetRetry('/health');
     $('#status').textContent = h.ready ? 'model ready' : 'loading…';
   }catch(e){ $('#status').textContent = 'offline'; }
 
+  // 2. populate filters + KPIs (retrying while the model finishes loading)
   try{
-    const s = await jget('/api/surfaces');
+    const s = await jgetRetry('/api/surfaces');
     const se = $('#surf');
-    s.surfaces.forEach(v => se.add(new Option(v,v)));
     const te = $('#tr');
-    s.transparency.forEach(v => te.add(new Option(v,v)));
+    if(se.options.length <= 1) s.surfaces.forEach(v => se.add(new Option(v,v)));
+    if(te.options.length <= 1) s.transparency.forEach(v => te.add(new Option(v,v)));
   }catch(e){}
 
   try{
-    const m = await jget('/api/meta');
+    const m = await jgetRetry('/api/meta');
     const t = m.metrics.tasks;
     $('#k-r2').textContent  = t.rgb.ensemble.r2.toFixed(3);
     $('#k-fam').textContent = (t.color_family.ensemble.accuracy*100).toFixed(1)+'%';
@@ -212,7 +231,17 @@ $('#go').addEventListener('click', async () => {
       transparency: $('#tr').value || null,
       top_k: parseInt($('#k').value,10)
     };
-    const d = await jpost('/api/suggest', body);
+    let d;
+    try{
+      d = await jpost('/api/suggest', body);
+    }catch(err){
+      // A cold start returns 503 while the model loads — wait and retry once.
+      if(/503|loading/i.test(String(err.message||err))){
+        $('#results').innerHTML = '<div class="muted">Waking the model…</div>';
+        await new Promise(r => setTimeout(r, 5000));
+        d = await jpost('/api/suggest', body);
+      } else { throw err; }
+    }
     renderTarget(d);
     renderResults(d);
   }catch(e){
