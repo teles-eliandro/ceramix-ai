@@ -354,7 +354,20 @@ def limits_doc():
     if not md.exists():
         raise HTTPException(status_code=404, detail="LIMITS.md not bundled")
     body = _md_to_html(md.read_text(encoding="utf-8"))
-    return HTMLResponse(_wrap_doc("CERAMIX-AI — information limit", body))
+    return HTMLResponse(_wrap_doc("CERAMIX-AI — information limit", body,
+                                  back_href="/docs/paper"))
+
+
+@app.get("/docs/paper", response_class=HTMLResponse)
+def paper_doc():
+    """Serve the full study: empirical limits of glaze colour prediction."""
+    md = (ROOT / "docs" / "PAPER_limits_of_ml_colour_prediction.md")
+    if not md.exists():
+        raise HTTPException(status_code=404, detail="paper not bundled")
+    body = _md_to_html(md.read_text(encoding="utf-8"))
+    return HTMLResponse(_wrap_doc(
+        "When the Signal Is Smaller Than the Noise — CERAMIX-AI", body,
+        back_href="/docs/limits"))
 
 
 def _esc(s: str) -> str:
@@ -450,7 +463,7 @@ def _md_to_html(md: str) -> str:
     return "\n".join(out)
 
 
-def _wrap_doc(title: str, body: str) -> str:
+def _wrap_doc(title: str, body: str, back_href: str = "/") -> str:
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{_esc(title)}</title>
@@ -478,10 +491,14 @@ def _wrap_doc(title: str, body: str) -> str:
              border-left:3px solid var(--accent);border-radius:8px}}
  hr{{border:0;border-top:1px solid var(--line);margin:30px 0}}
  .back{{display:inline-block;margin-bottom:22px;font-size:13.5px;text-decoration:none}}
+ .backrow{{display:flex;gap:16px;flex-wrap:wrap}}
  @media(max-width:600px){{.wrap{{padding:22px 14px 50px}} h1{{font-size:22px}}
    th,td{{white-space:normal}}}}
 </style></head><body><div class="wrap">
-<a class="back" href="/">← back to CERAMIX-AI</a>
+<div class="backrow">
+<a class="back" href="{back_href}">← back</a>
+<a class="back" href="/">CERAMIX-AI</a>
+</div>
 {body}
 </div></body></html>"""
 
