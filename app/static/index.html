@@ -309,11 +309,17 @@ async function jgetRetry(p, tries=12, delay=2500){
     $('#k-tr').textContent  = (t.transparency.ensemble.accuracy*100).toFixed(1)+'%';
   }catch(e){}
 
-  // quick swatches
-  const sw = ['#F2E8D5','#E0C9A6','#B8860B','#8B5A2B','#6B4226','#3B3B3B',
-              '#2F4F6F','#4A6B4A','#7B2D26','#D9C7C0'];
-  $('#quick').innerHTML = '<div class="muted" style="margin-bottom:8px">Quick swatches</div>' +
-    sw.map(c=>`<span class="sw" style="width:38px;height:38px;cursor:pointer;margin:3px"
+  // Quick swatches: shortcuts into the target-colour field.
+  // The palette spans the lightness axis on purpose. The paper's central finding is
+  // that prediction error grows as the target gets darker, so a palette piled up in
+  // the light end would quietly steer users toward the easy region and hide the
+  // model's weakest area. These 10 are spread across the full range.
+  const sw = ['#F5EFE3','#D9C3A0','#C08A3E','#A0522D','#6B4226','#3A2A20',
+              '#1A1A1A','#7B2D26','#2F4F6F','#283E28'];
+  $('#quick').innerHTML =
+    '<div class="muted" style="margin-bottom:8px">Quick swatches ' +
+    '<span style="opacity:.7">— light → dark</span></div>' +
+    sw.map(c=>`<span class="sw" style="width:38px;height:38px;cursor:pointer;margin:3px;background:${c}"
                 data-c="${c}" title="${c}" onclick="pick('${c}')"></span>`).join('');
 })();
 
