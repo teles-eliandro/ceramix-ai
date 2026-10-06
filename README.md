@@ -6,6 +6,22 @@ Given a target colour and surface finish, CERAMIX-AI ranks real, already-fired g
 recipes by how well their *predicted colour distribution* matches the target — reporting
 a calibrated prediction interval rather than a false-precision point estimate.
 
+## ▶ Try it live
+
+|  |  |
+|---|---|
+| **Web app** — search and rank recipes | **[ceramix-ai.onrender.com](https://ceramix-ai.onrender.com)** |
+| **API** — OpenAPI / Swagger UI | [ceramix-ai.onrender.com/docs](https://ceramix-ai.onrender.com/docs) |
+| **Study** — full paper, 11 sections | [ceramix-ai.onrender.com/docs/paper](https://ceramix-ai.onrender.com/docs/paper) |
+| **Summary** — the information limit | [ceramix-ai.onrender.com/docs/limits](https://ceramix-ai.onrender.com/docs/limits) |
+
+No signup, no API key. Pick a target colour, choose a surface finish, press
+**Suggest recipes** — you get ranked real recipes with their full oxide composition,
+weighed ingredients, firing cone, atmosphere and UMF.
+
+> The app runs on a free tier, so the first request after a period of inactivity can take
+> ~30–60 s to wake. The UI shows a countdown while it does.
+
 **Author:** Eliandro Teles · UFSCar · eliandro.teles@estudante.ufscar.br
 **AI assistance:** declared in [`AUTHORSHIP.md`](AUTHORSHIP.md) — an AI research
 assistant was used as a tool under human direction and verification, and is credited
