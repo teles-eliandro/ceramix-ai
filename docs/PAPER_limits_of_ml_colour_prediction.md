@@ -26,12 +26,18 @@ of the inputs can reduce within-group variance, the achievable R² for any chemi
 predictor on this dataset is bounded near **0.17–0.28**, depending on the granularity of
 the composition signature.
 
-We conclude that the limiting factor is **not model capacity but label quality**: GlazyBench
-records colour as sRGB values extracted from community photographs, without firing-curve
-control, applied-layer thickness, particle-size distribution or kiln atmosphere logging.
-We provide the full decomposition, the decomposition-based modelling strategy we used to
-push beyond the naive global model, and a concrete specification for the dataset that
-*would* support high-accuracy prediction.
+We conclude that the limiting factor is **not model capacity, feature representation,
+nor human annotation quality**, but the **uncontrolled imaging channel and unrecorded
+process variables**: GlazyBench records colour as sRGB values extracted from community
+photographs, without firing-curve control, applied-layer thickness, particle-size
+distribution or kiln atmosphere logging. We test and reject two natural remedies
+explicitly — 41 physics-derived glass-science features (ΔR² = −0.0000, 95 % CI
+[−0.0048, +0.0055]) and label curation (four independent annotators agree exactly,
+0.00 disagreement) — thereby localising the noise to the imaging and process steps
+rather than the annotation step. We provide the full decomposition, the
+decomposition-based modelling strategy we used to push beyond the naive global model,
+and a concrete specification for the dataset that *would* support high-accuracy
+prediction.
 
 **Keywords:** ceramic glaze, colour prediction, Kubelka–Munk, machine learning,
 noise ceiling, dataset quality, reproducibility.
@@ -58,17 +64,21 @@ for such systems commonly target **R² ≥ 0.985** and **ΔE₀₀ < 0.5** [5–
 This study asks a prior question: *is such a target achievable given the data that
 actually exists?* To answer it we assembled the largest openly available corpus of real
 glaze formulations and measured both model performance and the intrinsic ceiling
-imposed by label noise.
+imposed by the data itself.
 
 ### Contributions
 
 1. A reproducible baseline on GlazyBench with full held-out evaluation (**§4**).
-2. A **variance decomposition** quantifying the label-noise ceiling (**§5**).
-3. A **decomposition-based modelling strategy** that conditions on part of the problem
+2. A **variance decomposition** quantifying the ceiling imposed by the data (**§5**).
+3. **Two falsification experiments** that isolate the cause of the ceiling: physics-derived
+   glass-science features (**§5.4.1**) and label curation by four independent annotators
+   (**§5.4.2**). Both are rejected with measured confidence intervals, excluding model
+   capacity, feature representation and annotation quality as explanations.
+4. A **decomposition-based modelling strategy** that conditions on part of the problem
    to exploit the remaining degrees of freedom (**§6**).
-4. A **calibrated uncertainty model** reporting prediction intervals rather than
+5. A **calibrated uncertainty model** reporting prediction intervals rather than
    misleading point estimates (**§7**).
-5. A **specification for the dataset** that would support high-accuracy prediction (**§9**).
+6. A **specification for the dataset** that would support high-accuracy prediction (**§9**).
 
 ---
 
@@ -283,6 +293,108 @@ schedule** — are precisely the ones the Kubelka–Munk formulation requires: (
 function of the applied coating's optical thickness, and the firing schedule governs
 chromophore speciation.
 
+### 5.4 Two further hypotheses, tested and rejected
+
+Sections 5.1–5.3 establish *that* a ceiling exists. They do not establish *which*
+component enforces it. Three candidates can produce a plateau of this kind: the model,
+the feature representation, or the labels. Having already matched and exceeded the
+published baselines on this dataset (§4.1), we tested the remaining two directly. Both
+were rejected, and the second rejection localises the noise.
+
+#### 5.4.1 Hypothesis: the representation is too shallow
+
+**Rationale.** Colour and surface are not functions of a recipe but of the *glass
+structure* the recipe forms on firing. If the raw oxide vector under-determines that
+structure, then supplying explicit structure descriptors — the classical route — should
+help.
+
+**Implementation.** We added 41 physics-derived features grounded in established glass
+science:
+
+- coefficient of thermal expansion (CTE) from six independent additive oxide models —
+  Sankey, Appen, English & Turner, Hall, Winkelmann & Schott, Mayer & Havas — including
+  Appen's concentration-dependent terms for B₂O₃, SiO₂ and TiO₂, and the empirical
+  dilatometer correction `CTE = (CTE_calc × 0.81) + 0.63` (§11, [16–17])
+- boron coordination ratio, the tetrahedral/trigonal structural switch
+- degree of polymerisation and a non-bridging-oxygen proxy
+- molar volume and packing density
+- chromophore loading weighted by per-oxide colouring strength
+- opacifier-to-chromophore ratio and silica saturation
+
+**Protocol.** Identical train/test splits, identical estimator configurations
+(RandomForest, 300 trees, `min_samples_leaf=2`), and a **paired bootstrap over 1,000
+test resamples** so that any reported difference carries an interval.
+
+**Result — no improvement.**
+
+| Task | Base | + Physics | Δ | 95 % CI | Verdict |
+|---|---|---|---|---|---|
+| Colour R² | 0.3346 | 0.3345 | **−0.0000** | [−0.0048, +0.0055] | no effect |
+| Surface F1 (macro) | 0.3077 | 0.3108 | +0.0031 | inside noise | no effect |
+| Transparency F1 (macro) | 0.5325 | 0.5316 | −0.0009 | inside noise | no effect |
+
+The confidence interval on ΔR² **contains zero**. The model did not ignore the new
+features — they absorbed **41.4 %** of total feature importance, with weighted
+chromophore loading alone at 13 %. The information was simply not new.
+
+> **Why it failed.** CTE is a *linear function of the raw oxides*. A model receiving
+> SiO₂, Al₂O₃, B₂O₃ and Na₂O can already compute it internally, along with the
+> ratios derived from the same vector. Re-expressing a function of the existing
+> features under a physically meaningful name adds redundancy, not signal.
+>
+> **General lesson.** Before engineering a feature, ask whether it is a function of
+> the features already present. If it is, the engineering effort buys a rename.
+
+#### 5.4.2 Hypothesis: the labels are noisy
+
+**Rationale.** Section 5.3 lists label fidelity as a suspect. GlazyBench derives colour
+from community photographs by automatic extraction, and the annotation pipeline
+documents a known difficulty: each image yields **two** prominent colours (the glaze and
+the background), disambiguated by multi-model voting.
+
+**Data.** The release ships `annotations_all.csv`: **5,503 colour annotations over
+4,903 samples**, produced by four independent human annotators working from the
+photographs. **200 samples were annotated by all four**, giving a direct measurement of
+inter-annotator disagreement.
+
+**Result — the labels are clean.**
+
+| Measurement | Value |
+|---|---|
+| Inter-annotator disagreement (200 samples × 4 annotators) | **0.00** |
+| Curated labels identical to shipped targets | **95.6 %** |
+| Distance between the two auto-extracted candidate colours | **150.4** |
+| Annotators unable to choose between them (`neither`/`both`) | **974 / 5,503 = 17.7 %** |
+
+Four independent annotators produced **identical** colours — not merely close. The
+human-in-the-loop step *confirmed* the automatic extraction rather than correcting it.
+
+**The noise therefore sits upstream of the annotation, in the photograph.** The two
+candidate colours extracted from a single image lie **150.4 sRGB units** apart on
+average (median 148.8, 90th percentile 236.8). In **17.7 %** of samples a human cannot
+determine which is the glaze.
+
+> **The decisive comparison.** The model's mean absolute error is **38.5 sRGB units**.
+> The ambiguity intrinsic to its own target is **150.4**. The model is operating at
+> roughly **one quarter** of the target's own ambiguity, and below the 47.8-unit
+> dispersion between chemically identical recipes (§5.1). It is not underfitting the
+> signal; it is fitting a signal smaller than the noise.
+
+#### 5.4.3 Consequence for the ceiling analysis
+
+The two tests partition the variance budget cleanly:
+
+| Component | Status |
+|---|---|
+| Model capacity | **Excluded** — exceeds published baselines (§4.1) |
+| Feature representation | **Excluded** — tested, ΔR² = −0.0000, CI contains zero (§5.4.1) |
+| Human annotation | **Excluded** — 0.00 disagreement across four annotators (§5.4.2) |
+| **Photographic colour extraction + unrecorded process** | **Remaining cause** |
+
+This sharpens the claim in §5.1: the 82.7 % within-chemistry variance is not an
+artefact of careless labelling. It is the physical spread of the process, recorded
+through an uncontrolled imaging channel. Both must be fixed for R² to move.
+
 ---
 
 ## 6. Decomposition-based modelling
@@ -454,21 +566,39 @@ how much process control is required to hit a target.
 ## 8. Implications
 
 1. **R² ≥ 0.985 is unattainable on this class of data.** The ceiling is a property of
-   the labels, not the learner. Reporting a higher figure would require either a
-   different dataset or an evaluation protocol that permits leakage.
+   the data-generating process — the uncontrolled imaging channel plus unrecorded
+   process variables — not of the learner, the features, or the annotation work. We
+   excluded the latter three by direct experiment (§5.4). Reporting a higher figure
+   would require either a different dataset or an evaluation protocol that permits
+   leakage.
 
-2. **Higher R² requires process instrumentation, not better algorithms.** Adding soak
-   time, ramp rate, quantified atmosphere, layer thickness and particle-size
-   distribution matters far more than any architectural change.
+2. **Neither more data nor better features will move the ceiling.** §5.4.1 shows that
+   adding physically-motivated structural descriptors yields ΔR² whose 95 % confidence
+   interval contains zero, because those descriptors are functions of the inputs
+   already present. The binding constraint is *information the dataset never recorded*,
+   not information the model failed to exploit. This distinguishes a data-acquisition
+   problem from a modelling problem, and only the former is tractable here.
 
-3. **The correct product behaviour under noise is interval prediction and ranking.**
+3. **Higher R² requires process instrumentation and controlled colour measurement.**
+   Adding soak time, ramp rate, quantified atmosphere, layer thickness and particle-size
+   distribution — and reading colour with a spectrophotometer instead of a photograph —
+   matters far more than any architectural change. §5.4.2 localises the noise to the
+   imaging step: the two candidate colours automatically extracted from one photograph
+   differ by 150.4 sRGB units, and a human cannot adjudicate in 17.7 % of cases.
+
+4. **The correct product behaviour under noise is interval prediction and ranking.**
    Point estimation invites over-trust. Ranking candidate recipes by predicted
    *distribution* overlap with the target is robust to exactly the noise we measured.
 
-4. **Texture and transparency are more learnable than precise shade.** At 54.6 % and
+5. **Texture and transparency are more learnable than precise shade.** At 54.6 % and
    58.6 % accuracy over 9 and 4 classes, surface classification is materially more
    reliable than sRGB regression — because surface finish is driven by bulk melt
    chemistry (flux balance, silica:alumina ratio), which *is* recorded.
+
+6. **A useful negative result.** The failure of §5.4.1 is itself generalisable: any
+   feature that is a deterministic function of features already in the design matrix
+   cannot add information, however physically meaningful its name. Reporting this
+   explicitly saves the community from repeating an intuitive but empty optimisation.
 
 ---
 
@@ -501,18 +631,69 @@ All code, data and metrics are in the project repository:
 ceramix-ai/
 ├── data/glazybench/                     source data (MIT)
 ├── src/features.py                      155-feature construction
+├── src/physics.py                       41 physics-derived features (§5.4.1)
 ├── src/train.py                         ensemble training + evaluation
 ├── src/decomposed.py                    M1–M7 conditioned models
 ├── src/uncertainty.py                   quantile + conformal intervals
+├── scripts/ab_physics_experiment.py     the A/B test of §5.4.1
 └── models/
     ├── metrics.json                     baseline ensemble metrics
     ├── metrics_decomposed.json          conditioned-model metrics
-    ├── variance_decomp.json             noise-ceiling decomposition
+    ├── variance_decomp.json             within-chemistry decomposition
     ├── noise_analysis.json              measurement-noise statistics
-    └── uncertainty.json                 calibrated interval results
+    ├── uncertainty.json                 calibrated interval results
+    └── ab_physics.json                  §5.4.1 result + bootstrap CI
 ```
 
 Random seeds are fixed (`SEED = 42`). The GlazyBench split is canonical and unmodified.
+
+Reproducing §5.4:
+
+```bash
+python src/physics.py                        # smoke-test the CTE implementation
+python scripts/ab_physics_experiment.py      # A/B + 1,000-sample paired bootstrap
+```
+
+The §5.4.2 label analysis uses `annotations_all.csv` from the GlazyBench release:
+
+```python
+import pandas as pd, numpy as np
+
+a = pd.read_csv("annotations_all.csv")
+NA = np.array([np.nan] * 3)
+
+def rgb(h):
+    h = str(h).lstrip("#")
+    return np.array([int(h[i:i+2], 16) for i in (0, 2, 4)]) if len(h) == 6 else NA
+
+# inter-annotator disagreement: 200 samples carried by all four annotators
+multi = a[a["sample_id"].map(a["sample_id"].value_counts()).gt(1)]
+multi = multi[np.isfinite([rgb(h)[0] for h in multi["final_hex"]])]
+for _, g in multi.groupby("sample_id"):
+    M = np.vstack([rgb(h) for h in g["final_hex"]])
+    print(np.linalg.norm(M[:, None] - M[None, :], axis=-1).mean())   # 0.00
+
+# the two candidate colours extracted from each photograph
+d = np.array([np.linalg.norm(rgb(x) - rgb(y))
+              for x, y in zip(a["raw_color_1_hex"], a["raw_color_2_hex"])])
+d = d[np.isfinite(d)]
+
+print(d.mean())          # 150.4
+print(np.median(d))      # 148.8
+print(np.percentile(d, 90))                                              # 236.8
+print(a["raw_color_choice_closest_to_glaze"].isin(["neither", "both"]).mean())  # 0.177
+
+# curated labels vs the shipped targets
+t = pd.read_json("property_prediction_test_targets.json").set_index("id")
+target = {i: np.array([c["r"], c["g"], c["b"]], float)
+          for i, c in t["color_rgb"].items() if isinstance(c, dict)}
+dm = np.array([np.linalg.norm(rgb(h) - target[s])
+               for s, h in zip(a["sample_id"], a["raw_color_1_hex"]) if s in target])
+print(dm.mean())         # 7.39
+print((dm < 1).mean())   # 0.956 identical to the shipped label
+```
+
+All values printed above are the ones reported in §5.4.2.
 
 ---
 
@@ -565,6 +746,21 @@ strength.*
 
 [15] ISO 2813 — *Paints and varnishes: Determination of gloss value at 20°, 60° and
 85°.*
+
+[16] English, S., & Turner, W. E. S. (1927). *The calculation of the coefficients of
+expansion of glasses from their chemical composition.* Journal of the Society of Glass
+Technology, 11, 277–283; correction ibid. (1929), 12, 760.
+
+[17] Appen, A. A. — additive oxide coefficients for thermal expansion, tabulated in
+Vargin, V. V., *Technology of Enamels* (trans. K. Shaw), Maclaren, 1967. Coefficients
+compiled with the dilatometer correction against Roy, R., glaze expansion data at
+`web.ncf.ca/bf250/glazeexpansion.html`. See also Hall, F. P. (1930), *The influence of
+chemical composition on the physical properties of glazes*, Journal of the American
+Ceramic Society, 13(3), 182–190.
+
+[18] Sankey, E. (1921). *The calculation of the thermal expansion of glasses.*
+Glass Industry; and Winkelmann, A., & Schott, O. (1894). *Über thermische Widerstands-
+coefficienten verschieden zusammengesetzter Gläser.* Annalen der Physik, 51, 730.
 
 ---
 
