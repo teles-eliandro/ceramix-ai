@@ -1,6 +1,22 @@
 .venv/
 __pycache__/
 *.pyc
-data/glazybench/*.json
 catboost_info/
 models/candidate_cache.parquet
+
+# ---------------------------------------------------------------------------
+# GlazyBench data must NEVER be committed.
+#
+# Glazy.org content is CC BY-NC-SA 4.0 and their AI Use & Data Access Policy
+# requires derived datasets to carry the same licence; redistribution from this
+# repository would also strip the per-contributor attribution the licence
+# requires. Fetch it yourself — see "Data is not redistributed here" in README.
+# ---------------------------------------------------------------------------
+data/
+data/glazybench/
+data/glazybench/*.json
+*.parquet
+
+# Local research downloads
+ceramic_ds/
+glaze_research/

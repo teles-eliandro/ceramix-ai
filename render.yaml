@@ -6,7 +6,13 @@ services:
     region: oregon
     branch: master
     autoDeploy: true
-    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    # The GlazyBench data and the derived deploy bundle are NOT in the repo:
+    # Glazy.org content is CC BY-NC-SA 4.0 and must not be redistributed, and
+    # the bundle embeds 4,903 full recipe records. Both are fetched/rebuilt here.
+    buildCommand: >-
+      pip install --upgrade pip &&
+      pip install -r requirements.txt &&
+      python scripts/fetch_and_build.py
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:

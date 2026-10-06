@@ -6,6 +6,40 @@ Given a target colour and surface finish, CERAMIX-AI ranks real, already-fired g
 recipes by how well their *predicted colour distribution* matches the target — reporting
 a calibrated prediction interval rather than a false-precision point estimate.
 
+**Author:** Eliandro Teles · UFSCar · eliandro.teles@estudante.ufscar.br
+**AI assistance:** declared in [`AUTHORSHIP.md`](AUTHORSHIP.md) — an AI research
+assistant was used as a tool under human direction and verification, and is credited
+in the acknowledgements, not as an author.
+**License:** [CC BY-NC-SA 4.0](LICENSE) — non-commercial, share-alike, **not** MIT.
+**Study:** [`docs/PAPER_limits_of_ml_colour_prediction.md`](docs/PAPER_limits_of_ml_colour_prediction.md)
+· [live](https://ceramix-ai.onrender.com/docs/paper)
+
+---
+
+## Data is not redistributed here
+
+This repository deliberately contains **no GlazyBench data**. Glazy.org's content is
+CC BY-NC-SA 4.0, and their [AI Use & Data Access Policy](https://help.glazy.org/about/data-use-policy)
+requires that derived datasets and models carry the same license and that commercial
+AI training be separately licensed. ShareAlike obligations propagate, so neither this
+code nor any model trained on it can be relicensed permissively.
+
+To reproduce, fetch the benchmark yourself:
+
+```bash
+pip install huggingface_hub
+huggingface-cli download AlpachinoNLP/GlazyBench --repo-type dataset --local-dir data/glazybench
+```
+
+Then place the property-prediction splits as `data/glazybench/property_prediction_{train,test}_{recipes,targets}.json`.
+
+Required attribution:
+
+> "Data from Glazy.org (CC BY-NC-SA 4.0). Contributors retain copyright."
+>
+> Zhai, Z., Li, S., Shao, J., & Yu, J. (2026). *GlazyBench: A Benchmark for Ceramic
+> Glaze Property Prediction and Image Generation.* arXiv:2605.06641.
+
 ---
 
 ## Honest headline result
@@ -33,9 +67,16 @@ variance, i.e. chemically identical recipes fire to visibly different colours.
 | Ceiling on R² for any chemistry-only predictor | **≈ 0.17–0.28** |
 | Dispersion inside identical-chemistry groups | **47.8 sRGB units** (visible) |
 
-The limiting factor is **label quality, not model capacity**. GlazyBench records colour
-as sRGB extracted from community photographs, without firing curve, layer thickness,
-particle size or quantified atmosphere.
+Three candidate causes were tested. Two were rejected by experiment (§5.4 of the study):
+
+| Cause | Status |
+|---|---|
+| Model capacity | Excluded — exceeds the published baselines on this data |
+| Feature representation | Excluded — 41 physics-derived features, ΔR² = **−0.0000**, 95 % CI contains zero |
+| Human annotation | Excluded — four independent annotators agree **exactly** (0.00 disagreement) |
+| **Imaging channel + unrecorded process** | **Survives** — two auto-extracted colours per photo sit **150.4** units apart; a human cannot adjudicate in **17.7 %** of cases |
+
+The model's error (~38.5 units) is **below the ambiguity of its own target**.
 
 ---
 

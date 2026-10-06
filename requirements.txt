@@ -6,3 +6,6 @@ catboost>=1.2
 fastapi>=0.110
 uvicorn>=0.27
 pyarrow>=15.0
+# required by scripts/fetch_and_build.py to download the GlazyBench splits;
+# the data is not vendored in this repo (see README, "Data is not redistributed")
+huggingface_hub>=0.23

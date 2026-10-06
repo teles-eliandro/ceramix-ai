@@ -1,0 +1,71 @@
+CC BY-NC-SA 4.0 — Attribution-NonCommercial-ShareAlike 4.0 International
+
+Copyright (c) 2026 Eliandro Teles
+
+This work — the CERAMIX-AI code, the trained models, the derived features and
+the accompanying study — is licensed under the Creative Commons
+Attribution-NonCommercial-ShareAlike 4.0 International License.
+
+You are free to:
+
+  Share — copy and redistribute the material in any medium or format.
+  Adapt — remix, transform, and build upon the material.
+
+Under the following terms:
+
+  Attribution — You must give appropriate credit to Eliandro Teles, cite the
+    source (Glazy.org and GlazyBench where applicable) and indicate if changes
+    were made. You may do so in any reasonable manner, but not in any way that
+    suggests the licensor endorses you or your use.
+
+  NonCommercial — You may NOT use the material for commercial purposes.
+    In particular, per the Glazy.org AI Use & Data Access Policy, you may not
+    use this work to train, fine-tune or test any AI model intended for
+    commercial deployment, nor incorporate it into a proprietary commercial
+    dataset.
+
+  ShareAlike — If you remix, transform, or build upon the material, you must
+    distribute your contributions under the same license as the original.
+
+  No additional restrictions — You may not apply legal terms or technological
+    measures that legally restrict others from doing anything the license
+    permits.
+
+Full license text: https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+
+────────────────────────────────────────────────────────────────────────────
+
+WHY THIS LICENSE AND NOT MIT
+
+The source data derives from Glazy.org, whose content is licensed
+CC BY-NC-SA 4.0. The Glazy.org AI Use & Data Access Policy (last updated
+3 December 2025) states that any dataset or model released from Glazy content
+must itself be released under CC BY-NC-SA 4.0, and that commercial AI training
+requires a separate license from info@glazy.org.
+
+ShareAlike obligations propagate. A permissive license (MIT, Apache-2.0, BSD)
+CANNOT be applied to this derived work, because it would grant downstream users
+rights — including commercial rights — that the upstream license does not
+permit the author to grant.
+
+The GlazyBench benchmark (arXiv:2605.06641) is distributed under MIT by its
+authors (Ziyu Zhai, Siyou Li, Juexi Shao, Juntao Yu). That MIT grant covers the
+authors' own contribution to the benchmark; it does not override the upstream
+CC BY-NC-SA 4.0 terms attaching to the Glazy.org content from which the
+benchmark was derived.
+
+If you need commercial rights to this work, contact info@glazy.org for the
+upstream data and the author for the code.
+
+────────────────────────────────────────────────────────────────────────────
+
+DATA ATTRIBUTION (required by the policy)
+
+  "Data from Glazy.org (CC BY-NC-SA 4.0). Contributors retain copyright."
+
+  Benchmark: Zhai, Z., Li, S., Shao, J., & Yu, J. (2026). GlazyBench: A
+  Benchmark for Ceramic Glaze Property Prediction and Image Generation.
+  arXiv:2605.06641.
+
+  Original glaze records and photographs: the Glazy.org community. Individual
+  contributors retain copyright in their own submissions.
