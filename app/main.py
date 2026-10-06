@@ -16,12 +16,13 @@ Reference: GlazyBench, arXiv:2605.06641 (MIT).
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -340,6 +341,150 @@ def index():
     if not f.exists():
         return {"service": "CERAMIX-AI", "docs": "/docs", "ui": "not built"}
     return FileResponse(f)
+
+
+@app.get("/docs/limits", response_class=HTMLResponse)
+def limits_doc():
+    """Serve the full analysis of the model's information limit.
+
+    Kept as a plain HTML wrapper around the markdown so it renders without
+    pulling a markdown dependency into the deploy image.
+    """
+    md = (ROOT / "docs" / "LIMITS.md")
+    if not md.exists():
+        raise HTTPException(status_code=404, detail="LIMITS.md not bundled")
+    body = _md_to_html(md.read_text(encoding="utf-8"))
+    return HTMLResponse(_wrap_doc("CERAMIX-AI — information limit", body))
+
+
+def _esc(s: str) -> str:
+    return (s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
+
+
+def _inline(s: str) -> str:
+    """Minimal inline markdown: code, bold, italic, links."""
+    s = _esc(s)
+    s = re.sub(r"`([^`]+)`", r"<code>\1</code>", s)
+    s = re.sub(r"\*\*([^*]+)\*\*", r"<b>\1</b>", s)
+    s = re.sub(r"(?<!\*)\*([^*]+)\*(?!\*)", r"<i>\1</i>", s)
+    s = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2">\1</a>', s)
+    return s
+
+
+def _md_to_html(md: str) -> str:
+    """Dependency-free markdown subset: headings, tables, lists, quotes, hr."""
+    out, lines, i = [], md.split("\n"), 0
+    while i < len(lines):
+        ln = lines[i]
+        stripped = ln.strip()
+
+        if not stripped:
+            i += 1
+            continue
+
+        # table: header row followed by a separator row
+        if (stripped.startswith("|") and i + 1 < len(lines)
+                and set(lines[i + 1].strip()) <= set("|-: ")):
+            cells = [c.strip() for c in stripped.strip("|").split("|")]
+            out.append("<table><thead><tr>"
+                       + "".join(f"<th>{_inline(c)}</th>" for c in cells)
+                       + "</tr></thead><tbody>")
+            i += 2
+            while i < len(lines) and lines[i].strip().startswith("|"):
+                cells = [c.strip() for c in lines[i].strip().strip("|").split("|")]
+                out.append("<tr>" + "".join(f"<td>{_inline(c)}</td>" for c in cells) + "</tr>")
+                i += 1
+            out.append("</tbody></table>")
+            continue
+
+        if stripped.startswith("```"):
+            i += 1
+            buf = []
+            while i < len(lines) and not lines[i].strip().startswith("```"):
+                buf.append(_esc(lines[i]))
+                i += 1
+            i += 1
+            out.append("<pre><code>" + "\n".join(buf) + "</code></pre>")
+            continue
+
+        m = re.match(r"^(#{1,6})\s+(.*)$", stripped)
+        if m:
+            lvl = len(m.group(1))
+            out.append(f"<h{lvl}>{_inline(m.group(2))}</h{lvl}>")
+            i += 1
+            continue
+
+        if stripped in ("---", "***", "___"):
+            out.append("<hr>")
+            i += 1
+            continue
+
+        if stripped.startswith(">"):
+            buf = []
+            while i < len(lines) and lines[i].strip().startswith(">"):
+                buf.append(_inline(lines[i].strip().lstrip(">").strip()))
+                i += 1
+            out.append("<blockquote>" + " ".join(buf) + "</blockquote>")
+            continue
+
+        # lists (support one level of nesting)
+        if re.match(r"^\s*[-*]\s+", ln) or re.match(r"^\s*\d+\.\s+", ln):
+            ordered = bool(re.match(r"^\s*\d+\.\s+", ln))
+            out.append("<ol>" if ordered else "<ul>")
+            while i < len(lines) and (re.match(r"^\s*[-*]\s+", lines[i])
+                                      or re.match(r"^\s*\d+\.\s+", lines[i])):
+                item = re.sub(r"^\s*(?:[-*]|\d+\.)\s+", "", lines[i])
+                out.append(f"<li>{_inline(item)}</li>")
+                i += 1
+            out.append("</ol>" if ordered else "</ul>")
+            continue
+
+        # paragraph
+        buf = []
+        while i < len(lines) and lines[i].strip() and not re.match(
+                r"^(#{1,6}\s|[-*]\s|\d+\.\s|>|\||```|---)", lines[i].strip()):
+            buf.append(lines[i].strip())
+            i += 1
+        if buf:
+            out.append("<p>" + _inline(" ".join(buf)) + "</p>")
+    return "\n".join(out)
+
+
+def _wrap_doc(title: str, body: str) -> str:
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{_esc(title)}</title>
+<style>
+ :root{{--bg:#141612;--panel:#1c1f19;--panel2:#23271f;--line:#33382c;
+        --fg:#e9ede2;--dim:#9aa389;--accent:#c8a648;--warn:#d9a441}}
+ *{{box-sizing:border-box}}
+ body{{margin:0;background:var(--bg);color:var(--fg);
+      font:15px/1.62 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}}
+ .wrap{{max-width:820px;margin:0 auto;padding:34px 20px 70px}}
+ a{{color:var(--accent)}}
+ h1{{font-size:27px;margin:0 0 6px;letter-spacing:-.2px}}
+ h2{{font-size:20px;margin:34px 0 12px;padding-top:16px;border-top:1px solid var(--line)}}
+ h3{{font-size:16px;margin:24px 0 8px;color:var(--accent)}}
+ code{{background:var(--panel2);padding:1px 6px;border-radius:5px;font-size:13px}}
+ pre{{background:var(--panel);border:1px solid var(--line);border-radius:9px;
+      padding:13px 15px;overflow-x:auto}}
+ pre code{{background:none;padding:0}}
+ table{{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px;
+        display:block;overflow-x:auto}}
+ th,td{{border:1px solid var(--line);padding:7px 10px;text-align:left;
+        vertical-align:top;white-space:nowrap}}
+ th{{background:var(--panel2)}}
+ blockquote{{margin:16px 0;padding:12px 16px;background:var(--panel);
+             border-left:3px solid var(--accent);border-radius:8px}}
+ hr{{border:0;border-top:1px solid var(--line);margin:30px 0}}
+ .back{{display:inline-block;margin-bottom:22px;font-size:13.5px;text-decoration:none}}
+ @media(max-width:600px){{.wrap{{padding:22px 14px 50px}} h1{{font-size:22px}}
+   th,td{{white-space:normal}}}}
+</style></head><body><div class="wrap">
+<a class="back" href="/">← back to CERAMIX-AI</a>
+{body}
+</div></body></html>"""
+
 
 
 # mount last so /api/* keeps priority

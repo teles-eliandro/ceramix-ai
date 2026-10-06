@@ -57,6 +57,19 @@
   .kpi b{display:block;font-size:19px;margin-top:2px}
   .note{background:#1a1d13;border:1px solid #3d3a1f;border-left:3px solid var(--warn);
         border-radius:8px;padding:12px 14px;font-size:13px;color:#e8dfb8;margin-top:14px}
+  /* ---- promise / scope ---- */
+  .promise{border-left:3px solid var(--accent2)}
+  .promise-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .promise-yes,.promise-no{background:var(--panel2);border:1px solid var(--line);
+                           border-radius:10px;padding:12px 14px;font-size:13px}
+  .promise-yes{border-left:3px solid var(--ok,#7fc96a)}
+  .promise-no{border-left:3px solid var(--warn)}
+  .promise-yes>b,.promise-no>b{display:block;margin-bottom:7px;font-size:13.5px}
+  .promise ul{margin:0;padding-left:18px}
+  .promise li{margin:5px 0;line-height:1.45}
+  .promise-yes li::marker{color:var(--ok,#7fc96a)}
+  .promise-no li::marker{color:var(--warn)}
+  @media(max-width:700px){.promise-row{grid-template-columns:1fr}}
   .ival{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
   footer{color:var(--dim);font-size:12.5px;text-align:center;padding:26px 20px;
          border-top:1px solid var(--line);margin-top:34px}
@@ -124,11 +137,45 @@
 <body>
 <header>
   <h1>CERAMIX-AI</h1>
-  <span class="tag">Ceramic colour &amp; surface prediction</span>
+  <span class="tag">Find real recipes closest to your target</span>
   <span class="tag" id="status">connecting…</span>
 </header>
 
 <div class="wrap">
+
+  <div class="card promise" style="margin-bottom:20px">
+    <h2>What this tool does — and what it does not</h2>
+    <div class="promise-row">
+      <div class="promise-yes">
+        <b>✔ It does</b>
+        <ul>
+          <li>Search <b>4,903 real, already-fired glaze recipes</b></li>
+          <li>Rank them by chemical similarity to your target colour</li>
+          <li>Give you the <b>full recipe</b>: oxides, weighed ingredients, cone, atmosphere, UMF</li>
+          <li>Report a <b>calibrated uncertainty interval</b> on every prediction</li>
+          <li>Show the colour <b>actually measured</b> for that recipe, next to its prediction</li>
+        </ul>
+      </div>
+      <div class="promise-no">
+        <b>✘ It does not</b>
+        <ul>
+          <li>Predict the exact colour a recipe will fire to in <i>your</i> kiln</li>
+          <li>Account for firing curve, soak, cooling rate or layer thickness</li>
+          <li>Replace a test tile</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note">
+      <b>Why.</b> Colour in this dataset is read from community photographs, and
+      <b>82.7 %</b> of its variance is <i>within-chemistry</i> — chemically identical
+      recipes fire to colours about <b>48 sRGB units</b> apart. The two candidate
+      colours automatically extracted from each photo sit <b>150 units</b> apart, and
+      a human annotator cannot decide between them in <b>17.7 %</b> of cases. A model
+      error of ~38 units is therefore <i>below the noise floor of its own target</i>.
+      Treat the output as a <b>shortlist of real recipes worth testing</b>, not a
+      colour guarantee.
+    </div>
+  </div>
 
   <div class="card" style="margin-bottom:20px">
     <h2>Measured performance — held-out test set (n = 4,903)</h2>
@@ -144,6 +191,14 @@
       differing by ~48 sRGB units. The ceiling for any chemistry-only model is ≈0.17–0.28,
       so these figures are at the information limit of the data — not a tuning failure.
       Predictions are therefore reported as <b>calibrated intervals</b>, never as exact values.
+      <br><br>
+      <b>Both improvement levers were tested and both failed.</b> Adding 41
+      physics-derived features (thermal expansion via six classical glass-science models,
+      polymerisation index, chromophore loading) changed R² by <b>−0.0000</b>
+      (95 % CI contains zero) — because those quantities are already implicit in the raw
+      oxides. Curating labels changed nothing either: four independent annotators agree
+      <b>100 %</b> of the time, so the labels are not the noise source. See
+      <a href="/docs/limits">the full analysis</a>.
     </div>
   </div>
 
