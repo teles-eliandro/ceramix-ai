@@ -1,6 +1,6 @@
 # When the Signal Is Smaller Than the Noise: Empirical Limits of Machine-Learned Colour Prediction for Ceramic Glazes
 
-**A reproducible study on 21,691 real glaze formulations**
+**A reproducible study on 21,684 real glaze formulations**
 
 ---
 
@@ -8,7 +8,7 @@
 
 We trained gradient-boosted and neural ensemble models to predict the fired colour
 (CIELAB-proxy sRGB) of ceramic glazes from their oxide chemistry, unity-molecular-formula
-(UMF) descriptors and firing regime. Using **GlazyBench** (21,691 real-world glaze
+(UMF) descriptors and firing regime. Using **GlazyBench** (21,684 real-world glaze
 formulations, train/test split 16,781/4,903), we obtain a held-out **R² = 0.348** for
 three-channel sRGB regression and **44.4 % / 54.6 % / 58.6 %** accuracy for colour-family,
 surface-texture and transparency classification respectively — each well above the
@@ -21,7 +21,7 @@ operating at or near that ceiling.
 
 A variance decomposition reveals that **82.7 %** of the colour variance in GlazyBench is
 *within-chemistry* variance: samples with chemically identical compositions produce fired
-colours scattered by a mean Euclidean sRGB distance of **47.8 units**. Because no function
+colours scattered by a mean Euclidean sRGB distance of **41.7 units**. Because no function
 of the inputs can reduce within-group variance, the achievable R² for any chemistry-only
 predictor on this dataset is bounded near **0.17–0.28**, depending on the granularity of
 the composition signature.
@@ -90,7 +90,7 @@ imposed by the data itself.
 
 | Property | Value |
 |---|---|
-| Records | 21,691 (16,781 train / 4,903 test) |
+| Records | 21,684 (16,781 train / 4,903 test) |
 | Licence | MIT |
 | Origin | glazy.org community glaze database |
 | Repository | `AlpachinoNLP/GlazyBench` (HuggingFace) |
@@ -240,17 +240,26 @@ computed the variance of colour **inside** each group:
 
 | Quantity | Value |
 |---|---|
-| Groups with ≥ 2 samples sharing identical chemistry | 14,342 |
-| Total colour variance | 2801.9 |
+| Distinct chemical-composition signatures in the training set | 14,342 |
+| Groups with ≥ 2 samples sharing identical chemistry | 661 |
+| Total colour variance (mean of per-channel variances) | 2801.9 |
 | Within-group colour variance | 2316.4 |
 | **Irreducible fraction** | **82.7 %** |
 | **Ceiling on R² for any chemistry-only predictor** | **≈ 0.173** |
+
+Of the 14,342 distinct chemistry signatures, **661 are shared by two or more
+samples** — these are the groups across which within-chemistry variance can be
+measured. The lower per-channel dispersion (mean distance to the group centroid,
+**41.7 sRGB units**) is reported in `models/noise_analysis.json`; the 82.7 %
+irreducible fraction is the variance-ratio figure and is the one used for the
+ceiling. The two are different statistics of the same spread and are not
+interchangeable.
 
 Using a finer signature (chemistry **plus** raw-material list and amounts), the
 within-group variance falls to 2031.3, raising the ceiling to **≈ 0.275**.
 
 > **Interpretation.** Chemically identical recipes fire to visibly different colours.
-> Mean dispersion inside a group is **47.8 sRGB units** — a difference plainly visible
+> Mean dispersion inside a group is **41.7 sRGB units** — a difference plainly visible
 > to the eye. No function of the recorded inputs can predict a difference that the
 > inputs do not determine.
 
@@ -297,8 +306,10 @@ chromophore speciation.
 
 Sections 5.1–5.3 establish *that* a ceiling exists. They do not establish *which*
 component enforces it. Three candidates can produce a plateau of this kind: the model,
-the feature representation, or the labels. Having already matched and exceeded the
-published baselines on this dataset (§4.1), we tested the remaining two directly. Both
+the feature representation, or the labels. Having already trained and benchmarked four
+individual estimators and an ensemble on this dataset, all materially above the
+majority-class baseline for the classification tasks (§4.1), we tested the remaining two
+directly. Both
 were rejected, and the second rejection localises the noise.
 
 #### 5.4.1 Hypothesis: the representation is too shallow
@@ -374,9 +385,9 @@ candidate colours extracted from a single image lie **150.4 sRGB units** apart o
 average (median 148.8, 90th percentile 236.8). In **17.7 %** of samples a human cannot
 determine which is the glaze.
 
-> **The decisive comparison.** The model's mean absolute error is **38.5 sRGB units**.
+> **The decisive comparison.** The model's mean absolute error is **38.0 sRGB units**.
 > The ambiguity intrinsic to its own target is **150.4**. The model is operating at
-> roughly **one quarter** of the target's own ambiguity, and below the 47.8-unit
+> roughly **one quarter** of the target's own ambiguity, and below the 41.7-unit
 > dispersion between chemically identical recipes (§5.1). It is not underfitting the
 > signal; it is fitting a signal smaller than the noise.
 
@@ -386,7 +397,7 @@ The two tests partition the variance budget cleanly:
 
 | Component | Status |
 |---|---|
-| Model capacity | **Excluded** — exceeds published baselines (§4.1) |
+| Model capacity | **Excluded** — four estimators benchmarked; ensemble MAE 38.0 sRGB (§4.1) |
 | Feature representation | **Excluded** — tested, ΔR² = −0.0000, CI contains zero (§5.4.1) |
 | Human annotation | **Excluded** — 0.00 disagreement across four annotators (§5.4.2) |
 | **Photographic colour extraction + unrecorded process** | **Remaining cause** |

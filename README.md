@@ -29,6 +29,8 @@ in the acknowledgements, not as an author.
 **License:** [CC BY-NC-SA 4.0](LICENSE) — non-commercial, share-alike, **not** MIT.
 **Study:** [`docs/PAPER_limits_of_ml_colour_prediction.md`](docs/PAPER_limits_of_ml_colour_prediction.md)
 · [live](https://ceramix-ai.onrender.com/docs/paper)
+· **Audit:** [`docs/AUDIT_v1.0.0.md`](docs/AUDIT_v1.0.0.md) — every numeric claim re-checked
+against the released artefacts; reproduce with `python scripts/audit_numbers.py`
 
 ---
 
@@ -81,18 +83,18 @@ variance, i.e. chemically identical recipes fire to visibly different colours.
 |---|---|
 | Colour variance within identical chemistry | **82.7 %** |
 | Ceiling on R² for any chemistry-only predictor | **≈ 0.17–0.28** |
-| Dispersion inside identical-chemistry groups | **47.8 sRGB units** (visible) |
+| Dispersion inside identical-chemistry groups | **41.7 sRGB units** (visible) |
 
 Three candidate causes were tested. Two were rejected by experiment (§5.4 of the study):
 
 | Cause | Status |
 |---|---|
-| Model capacity | Excluded — exceeds the published baselines on this data |
+| Model capacity | Excluded — four estimators benchmarked (CatBoost, XGBoost, Random Forest, MLP); best R² = 0.355, ensemble MAE 38.0 sRGB |
 | Feature representation | Excluded — 41 physics-derived features, ΔR² = **−0.0000**, 95 % CI contains zero |
 | Human annotation | Excluded — four independent annotators agree **exactly** (0.00 disagreement) |
 | **Imaging channel + unrecorded process** | **Survives** — two auto-extracted colours per photo sit **150.4** units apart; a human cannot adjudicate in **17.7 %** of cases |
 
-The model's error (~38.5 units) is **below the ambiguity of its own target**.
+The model's error (~38.0 units) is **below the ambiguity of its own target**.
 
 ---
 
@@ -169,7 +171,7 @@ quantile intervals under-cover by ~8 percentage points.
 **GlazyBench** — *A Benchmark for Ceramic Glaze Property Prediction and Image Generation.*
 arXiv:2605.06641 · Dataset `AlpachinoNLP/GlazyBench` · Licence MIT.
 
-21,691 real glaze formulations from glazy.org, with oxide chemistry, UMF, firing regime
+21,684 real glaze formulations from glazy.org, with oxide chemistry, UMF, firing regime
 and colour/texture/transparency targets.
 
 ## Industry standards referenced

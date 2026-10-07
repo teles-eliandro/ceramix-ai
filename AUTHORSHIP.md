@@ -9,8 +9,16 @@ in the acknowledgements and methods, not as an author.
 **Author**
 
     Eliandro Teles
-    Federal University of São Carlos (UFSCar), undergraduate
-    eliandro.teles@estudante.ufscar.br
+    Materials Engineer (B.Eng., Universidade Federal da Paraíba — UFPB)
+    Independent researcher
+
+*Affiliation note.* The author holds an undergraduate degree in Materials
+Engineering from the Federal University of Paraíba (UFPB) and completed one
+year of a Master's programme at the Federal University of São Carlos (UFSCar),
+which was not concluded. The affiliation given in this release is therefore
+UFPB — the degree actually awarded and verifiable — rather than UFSCar, and the
+author is not presented as a member of any institution's current faculty or
+student body.
 
 **AI assistance (declared)**
 
@@ -47,3 +55,12 @@ Undisclosed AI use is the leading cause of retraction and reputational damage in
 standard practice (ICMJE recommendations; COPE position statement on AI tools).
 A reader is entitled to know which parts of a result were produced by a model
 and which were verified by a human.
+
+**Data provenance**
+
+The study uses GlazyBench (arXiv:2605.06641, MIT licence) and does not
+redistribute its data. The label analysis in §5.4 uses `annotations_all.csv` from
+the GlazyBench release; the derived distance statistics (150.4 mean, 148.8
+median, 236.8 p90, 17.7 % undecidable, 0.00 inter-annotator disagreement,
+95.6 % label match) are reproducible from that file with the script printed in
+§10 of the paper.

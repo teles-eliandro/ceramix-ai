@@ -176,7 +176,7 @@ def _load_meta() -> dict:
         "arxiv": "arXiv:2605.06641",
         "licence": "MIT",
         "repository": "AlpachinoNLP/GlazyBench",
-        "records": 21691,
+        "records": 21684,
     }
     return out
 

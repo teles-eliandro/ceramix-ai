@@ -1,11 +1,11 @@
 cff-version: 1.2.0
 message: "If you use this work, please cite the version you used."
-title: "The signal is smaller than the noise: what 21,691 glaze recipes taught me about the limits of machine-learning colour prediction"
+title: "The signal is smaller than the noise: what 21,684 glaze recipes taught me about the limits of machine-learning colour prediction"
 abstract: >-
   Industry specifications for ceramic glaze colour prediction commonly target
-  R² ≥ 0.985 and ΔE₀₀ < 0.5. A gradient-boosted ensemble trained on 21,691 real,
-  already-fired glaze recipes reaches R² = 0.35 (MAE 38.5 sRGB units), ahead of
-  the dataset authors' own baselines (40.1–40.9), so model capacity is not the
+  R² ≥ 0.985 and ΔE₀₀ < 0.5. A gradient-boosted ensemble trained on 21,684 real,
+  already-fired glaze recipes reaches R² = 0.35 (MAE 38.0 sRGB units), ahead of
+  all four single-model baselines evaluated here, so model capacity is not the
   constraint. Two improvement hypotheses were tested and rejected: (1) 41
   physics-derived features from classical glass science changed R² by −0.0000
   (95% CI [−0.0048, +0.0055]), because those quantities are already implicit in
@@ -15,22 +15,20 @@ abstract: >-
   labels are not the noise source. Measuring the labels instead revealed the
   real limit: the two candidate colours auto-extracted from each photograph sit
   150.4 sRGB units apart, and a human cannot adjudicate in 17.7% of cases.
-  82.7% of colour variance is within-chemistry variance — chemically identical
-  recipes fire to visibly different colours because firing curve, layer
-  thickness, particle size and quantified atmosphere are unrecorded, and colour
-  is read from uncontrolled photographs rather than a spectrophotometer. The
-  ceiling is therefore a property of the data-generating process, not of the
-  learner. Both natural modelling remedies are measurably empty. This is a
-  negative result, published because it is actionable: it tells the next
-  researcher where the information actually is, and saves them the two
+  82.7% of colour variance is within-chemistry variance (mean dispersion 41.7
+  sRGB units) — chemically identical recipes fire to visibly different colours
+  because firing curve, layer thickness, particle size and quantified atmosphere
+  are unrecorded, and colour is read from uncontrolled photographs rather than a
+  spectrophotometer. The ceiling is therefore a property of the data-generating
+  process, not of the learner. Both natural modelling remedies are measurably
+  empty. This is a negative result, published because it is actionable: it tells
+  the next researcher where the information actually is, and saves them the two
   experiments that do not help.
 authors:
   - family-names: "Teles"
     given-names: "Eliandro P."
-    affiliation: "Universidade Federal de São Carlos (UFSCar)"
-    email: "eliandro.teles@estudante.ufscar.br"
-    # orcid: "https://orcid.org/0000-0000-0000-0000"  # preencher se voce tiver ORCID
-version: "1.0.0"
+    affiliation: "Universidade Federal da Paraíba (UFPB)"
+version: "1.0.1"
 date-released: "2026-10-07"
 license: CC-BY-NC-SA-4.0
 url: "https://ceramix-ai.onrender.com/docs/paper"

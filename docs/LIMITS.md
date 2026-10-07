@@ -34,8 +34,10 @@ or the labels. We tested all three.
 
 ### 1. The model — ruled out
 
-We already beat the baselines published by the authors of the dataset
-(MAE 38.5 vs 40.1–40.9). A better model is not the constraint.
+We benchmarked four estimators plus a weighted ensemble on this dataset
+(CatBoost MAE 37.87, XGBoost 38.41, Random Forest 38.48, MLP 40.17; ensemble
+38.01), all materially above the majority-class baseline on the classification
+tasks. A better model is not the constraint.
 
 ### 2. The features — tested and failed
 

@@ -16,13 +16,13 @@ So I ran two experiments to find out what was broken. Both failed — and the
 failures are the most useful thing I've produced.
 
 THE SETUP
-21,691 real, already-fired glaze recipes. 155 features each: oxide chemistry,
+21,684 real, already-fired glaze recipes. 155 features each: oxide chemistry,
 Seger UMF, chromophore loadings, firing cone, atmosphere. Gradient-boosted
 ensemble. Held-out test set of 4,903.
 
-RESULT: R² = 0.35, mean error 38.5 sRGB units.
-(The dataset authors' own baselines: 40.1–40.9. I'm ahead of them. The model
-isn't the problem.)
+RESULT: R² = 0.35, mean error 38.0 sRGB units.
+(Comparison across four estimators - CatBoost 37.87, XGBoost 38.41, RF 38.48,
+MLP 40.17 - plus the weighted ensemble at 38.01. The model isn't the problem.)
 
 EXPERIMENT 1 — better features
 I implemented 41 physics-derived features from classical glass science. Thermal
@@ -46,8 +46,8 @@ candidate colours auto-extracted from each photograph sit 150.4 sRGB units
 apart, and in 17.7% of cases a human can't tell which one is the glaze.
 
 THE NUMBER THAT SETTLES IT
-  My model's error ............... 38.5
-  Spread between identical recipes . 47.8
+  My model's error ............... 38.0
+  Spread between identical recipes . 41.7
   Ambiguity in the target itself ... 150.4
 
 My error is 4x smaller than the ambiguity of what I'm predicting. The model
@@ -87,11 +87,11 @@ I built one and measured R² = 0.35.
 Two experiments to find what was broken. Both failed.
 The failures were the useful part. 🧵
 
-2/ Setup: 21,691 real fired glaze recipes, 155 chemical features,
+2/ Setup: 21,684 real fired glaze recipes, 155 chemical features,
 gradient-boosted ensemble, 4,903 held-out samples.
 
-R² = 0.35, mean error 38.5 sRGB units.
-Dataset authors' own baselines: 40.1–40.9. I beat them.
+R² = 0.35, mean error 38.0 sRGB units.
+Baselines across my four estimators: MAE 37.87-40.17. The ensemble: 38.01.
 So the model isn't the bottleneck.
 
 3/ Experiment 1 — better features.
@@ -125,8 +125,8 @@ In 17.7% of cases a human can't tell which is the glaze.
 
 7/ The number that settles it:
 
-  Model error ................ 38.5
-  Spread between identical recipes .. 47.8
+  Model error ................ 38.0
+  Spread between identical recipes .. 41.7
   Ambiguity in the target ......... 150.4
 
 My error is 4x smaller than the ambiguity of my own target.
@@ -159,14 +159,15 @@ HN = """\
 Show HN: I measured the noise floor of ceramic glaze colour prediction (R²=0.35)
 
 Industry specifications for ceramic glaze colour prediction commonly target
-R² >= 0.985 and dE00 < 0.5. I trained an ensemble on 21,691 real fired glaze
+R² >= 0.985 and dE00 < 0.5. I trained an ensemble on 21,684 real fired glaze
 recipes and measured R² = 0.35.
 
 Rather than tune toward an unattainable target, I tested the three possible
 causes of the plateau.
 
-Model capacity: excluded. My ensemble beats the baselines published by the
-authors of the dataset (MAE 38.5 vs 40.1-40.9).
+Model capacity: excluded. Four estimators benchmarked (CatBoost MAE 37.87,
+XGBoost 38.41, Random Forest 38.48, MLP 40.17) plus the weighted ensemble at
+38.01, all well above the majority-class baseline on the classification tasks.
 
 Feature representation: rejected by experiment. I implemented 41 physics-derived
 features (thermal expansion via six classical additive models, boron
@@ -181,7 +182,7 @@ annotated by all four, exact agreement (0.00 disagreement). But the two
 candidate colours auto-extracted from each photograph sit 150.4 sRGB units
 apart, and a human can't adjudicate in 17.7% of cases.
 
-That last number is the finding. Model MAE 38.5 vs 150.4 ambiguity in the
+That last number is the finding. Model MAE 38.0 vs 150.4 ambiguity in the
 target. 82.7% of colour variance is within-chemistry variance: chemically
 identical recipes fire to visibly different colours, because firing curve,
 layer thickness, particle size and quantified atmosphere are unrecorded, and
