@@ -22,7 +22,7 @@ weighed ingredients, firing cone, atmosphere and UMF.
 > The app runs on a free tier, so the first request after a period of inactivity can take
 > ~30–60 s to wake. The UI shows a countdown while it does.
 
-**Author:** Eliandro Teles · UFSCar · eliandro.teles@estudante.ufscar.br
+**Author:** Eliandro Teles · Materials Engineer, UFPB
 **AI assistance:** declared in [`AUTHORSHIP.md`](AUTHORSHIP.md) — an AI research
 assistant was used as a tool under human direction and verification, and is credited
 in the acknowledgements, not as an author.

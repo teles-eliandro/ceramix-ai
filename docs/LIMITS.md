@@ -13,17 +13,17 @@ where it stops. Every number here is reproducible from the repository.
 | Quantity | Value |
 |---|---|
 | Colour R² (held-out, n = 4,903) | **0.35** |
-| Colour MAE (sRGB units) | **38.5** |
-| Published baselines on the same data | MAE **40.1 – 40.9** |
+| Colour MAE (sRGB units) | **38.0** |
+| Single-model baselines evaluated here | MAE **37.9 – 40.2** |
 | Colour variance that is *within-chemistry* | **82.7 %** |
 | Ceiling on R² from chemistry alone | **0.17** |
 | Annotator-to-annotator disagreement | **0.00** |
 | Distance between the two colours auto-extracted per photo | **150.4** |
 | Cases where a human cannot pick the glaze colour | **17.7 %** |
 
-The model error (38.5) is **four times smaller** than the ambiguity in its own
+The model error (38.0) is **four times smaller** than the ambiguity in its own
 target (150.4) and **below** the intrinsic spread between chemically identical
-recipes (≈48). It is operating at the information limit of the data.
+recipes (41.7). It is operating at the information limit of the data.
 
 ---
 
